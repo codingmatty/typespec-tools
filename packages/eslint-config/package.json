@@ -1,14 +1,11 @@
 {
-  "name": "@repo/eslint-config",
+  "name": "@typespec-tools/eslint-config",
   "version": "0.0.0",
   "private": true,
   "files": [
-    "library.js",
-    "next.js",
-    "react-internal.js"
+    "library.js"
   ],
   "devDependencies": {
-    "@vercel/style-guide": "^5.2.0",
     "eslint-config-turbo": "^2.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-only-warn": "^1.1.0",
