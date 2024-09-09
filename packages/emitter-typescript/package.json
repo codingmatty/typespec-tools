@@ -1,7 +1,7 @@
 {
-  "name": "@typespec-tools/emitter-zod",
+  "name": "@typespec-tools/emitter-typescript",
   "version": "0.1.2",
-  "repository": "codingmatty/typespec-tools",
+  "repository": "codingmatty/typespec-tools/packages/emitter-typescript",
   "author": {
     "name": "Matthew Jacobs",
     "email": "codingmatty@gmail.com",
@@ -11,7 +11,7 @@
   "keywords": [
     "typespec",
     "emitter",
-    "zod"
+    "typescript"
   ],
   "type": "module",
   "main": "dist/index.js",
