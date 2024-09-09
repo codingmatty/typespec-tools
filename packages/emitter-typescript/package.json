@@ -1,7 +1,7 @@
 {
   "name": "@typespec-tools/emitter-typescript",
   "version": "0.1.3",
-  "repository": "codingmatty/typespec-tools/packages/emitter-typescript",
+  "repository": "codingmatty/typespec-tools",
   "author": {
     "name": "Matthew Jacobs",
     "email": "codingmatty@gmail.com",
