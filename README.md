@@ -2,6 +2,10 @@
 
 This repository contains a collection of tools for working with the [TypeSpec](https://typespec.io) DSL.
 
+---
+
+**Disclaimer:** Please note that this library is not officially affiliated with TypeSpec or Azure. It is an independent project started by @codingmatty.
+
 ## Packages
 
 - [emitter-zod](./packages/emitter-zod/README.md): A Typespec emitter for Zod schemas.
