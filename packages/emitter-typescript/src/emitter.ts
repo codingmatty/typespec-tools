@@ -96,7 +96,7 @@ export class TypescriptEmitter extends CodeTypeEmitter {
     let extendsClause;
 
     if (model.baseModel) {
-      extendsClause = code`extends ${this.emitter.emitTypeReference(model.baseModel)}`;
+      extendsClause = code`${this.emitter.emitTypeReference(model.baseModel)} &`;
     } else {
       extendsClause = "";
     }
@@ -113,7 +113,7 @@ export class TypescriptEmitter extends CodeTypeEmitter {
 
     return this.emitter.result.declaration(
       name,
-      code`${commentCode}\nexport interface ${name} ${extendsClause} {
+      code`${commentCode}\nexport type ${name} = ${extendsClause} {
         ${this.emitter.emitModelProperties(model)}
       }`
     );
@@ -154,7 +154,7 @@ export class TypescriptEmitter extends CodeTypeEmitter {
   ): EmitterOutput<string> {
     return this.emitter.result.declaration(
       name,
-      code`interface ${name} extends Array<${this.emitter.emitTypeReference(elementType)}> { };`
+      code`export type ${name} = Array<${this.emitter.emitTypeReference(elementType)}>;`
     );
   }
 
@@ -171,7 +171,7 @@ export class TypescriptEmitter extends CodeTypeEmitter {
   ): EmitterOutput<string> {
     return this.emitter.result.declaration(
       name,
-      code`interface ${name} {
+      code`export type ${name} = {
       ${this.#operationSignature(operation)}
     }`
     );
@@ -207,7 +207,7 @@ export class TypescriptEmitter extends CodeTypeEmitter {
     return this.emitter.result.declaration(
       name,
       code`
-      export interface ${name} {
+      export type ${name} = {
         ${this.emitter.emitInterfaceOperations(iface)}
       }
     `

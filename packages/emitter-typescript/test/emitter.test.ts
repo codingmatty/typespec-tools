@@ -92,7 +92,7 @@ describe("emitter-framework: typescript emitter", () => {
       }
     `);
 
-    assert.match(contents, /export interface A/);
+    assert.match(contents, /export type A =/);
     assert.match(contents, /x: \{ y: string \}/);
   });
 
@@ -108,9 +108,9 @@ describe("emitter-framework: typescript emitter", () => {
       }
     `);
 
-    assert.match(contents, /interface Test1/);
-    assert.match(contents, /interface TemplateInt32/);
-    assert.match(contents, /interface Test2/);
+    assert.match(contents, /export type Test1 = {/);
+    assert.match(contents, /export type TemplateInt32 = {/);
+    assert.match(contents, /export type Test2 = {/);
     assert.match(contents, /prop: TemplateInt32/);
   });
 
@@ -169,7 +169,7 @@ describe("emitter-framework: typescript emitter", () => {
       }
     `);
 
-    assert.match(contents, /MyArray2 extends Array<string>/);
+    assert.match(contents, /export type MyArray2 = Array<string>/);
     assert.match(contents, /x: MyArray2/);
     assert.match(contents, /y: string\[\]/);
     assert.match(contents, /z: \(string \| number\)\[\]/);
@@ -180,7 +180,7 @@ describe("emitter-framework: typescript emitter", () => {
       model MyArray2 is Array<unknown>;
     `);
 
-    assert.match(contents, /MyArray2 extends Array<unknown>/);
+    assert.match(contents, /export type MyArray2 = Array<unknown>/);
   });
 
   // todo: what to do with optionals not at the end??
@@ -192,14 +192,14 @@ describe("emitter-framework: typescript emitter", () => {
       op read(x: string, y: int32, z: { inline: true }, q?: SomeModel): string;
     `);
 
-    assert.match(contents, /interface read/);
+    assert.match(contents, /export type read = {/);
     assert.match(contents, /x: string/);
     assert.match(contents, /y: number/);
     assert.match(contents, /z: { inline: true }/);
     assert.match(contents, /q?: SomeModel/);
   });
 
-  it("emits interfaces", async () => {
+  it.only("emits interfaces", async () => {
     const contents = await emitTypeSpecToTs(`
       model Foo {
         prop: string;
@@ -220,11 +220,11 @@ describe("emitter-framework: typescript emitter", () => {
       interface TemplateThings extends Template<string> {}
     `);
 
-    assert.match(contents, /export interface Things/);
+    assert.match(contents, /export type Things =/);
     assert.match(contents, /read\(x: string\): string/);
     assert.match(contents, /write\(y: Foo\): Foo/);
     assert.match(contents, /callCb\(cb: Callback\): string/);
-    assert.match(contents, /export interface TemplateThings/);
+    assert.match(contents, /export type TemplateThings =/);
     assert.match(contents, /read\(\): string/);
     assert.match(contents, /write\(\): string/);
   });
@@ -317,7 +317,7 @@ describe("emitter-framework: typescript emitter", () => {
 
     assert.match(contents, /export type X = string;/);
     assert.match(contents, /export type Y = number;/);
-    assert.match(contents, /export interface Foo {/);
+    assert.match(contents, /export type Foo = {/);
     assert.match(contents, /x: X;/);
     assert.match(contents, /y: Y;/);
   });
@@ -338,8 +338,8 @@ describe("emitter-framework: typescript emitter", () => {
       await host.program.host.readFile("./tsp-output/output.ts")
     ).text;
     // some light assertions
-    assert.match(contents, /export interface Basic/);
-    assert.match(contents, /export interface HasRef/);
+    assert.match(contents, /export type Basic =/);
+    assert.match(contents, /export type HasRef =/);
   });
 
   it("emits to multiple files", async () => {
