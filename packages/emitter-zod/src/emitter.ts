@@ -21,6 +21,7 @@ import {
 import {
   code,
   CodeTypeEmitter,
+  Context,
   Declaration,
   EmittedSourceFile,
   EmitterOutput,
@@ -321,5 +322,12 @@ export class ZodEmitter extends CodeTypeEmitter {
       }
     );
     return emittedSourceFile;
+  }
+}
+
+export class SingleFileZodEmitter extends ZodEmitter {
+  programContext(): Context {
+    const outputFile = this.emitter.createSourceFile("output.ts");
+    return { scope: outputFile.globalScope };
   }
 }

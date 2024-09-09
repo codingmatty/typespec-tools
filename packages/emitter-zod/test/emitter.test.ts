@@ -1,10 +1,4 @@
-import {
-  Enum,
-  Interface,
-  Model,
-  Operation,
-  Union,
-} from "@typespec/compiler";
+import { Enum, Interface, Model, Operation, Union } from "@typespec/compiler";
 import {
   AssetEmitter,
   Context,
@@ -21,7 +15,7 @@ import * as prettier from "prettier";
 import { describe, it } from "vitest";
 
 import { emitTypeSpec, getHostForTypeSpecFile } from "./host.js";
-import { ZodEmitter } from "../src/emitter.js";
+import { SingleFileZodEmitter, ZodEmitter } from "../src/emitter.js";
 
 const testCode = `
 model Basic { x: string }
@@ -59,12 +53,7 @@ enum MyEnum {
 }
 `;
 
-class SingleFileEmitter extends ZodEmitter {
-  programContext(): Context {
-    const outputFile = this.emitter.createSourceFile("output.ts");
-    return { scope: outputFile.globalScope };
-  }
-
+class SingleFileTestEmitter extends SingleFileZodEmitter {
   operationReturnTypeReferenceContext(): Context {
     return {
       fromOperation: true,
@@ -80,7 +69,7 @@ class SingleFileEmitter extends ZodEmitter {
 }
 
 async function emitTypeSpecToTs(code: string) {
-  const emitter = await emitTypeSpec(SingleFileEmitter, code);
+  const emitter = await emitTypeSpec(SingleFileTestEmitter, code);
 
   const sf = await emitter.getProgram().host.readFile("./tsp-output/output.ts");
   return sf.text;
@@ -452,7 +441,7 @@ describe("emitter-framework: zod emitter", () => {
 
   it("emits models to a single file", async () => {
     const host = await getHostForTypeSpecFile(testCode);
-    const emitter = createAssetEmitter(host.program, SingleFileEmitter, {
+    const emitter = createAssetEmitter(host.program, SingleFileTestEmitter, {
       emitterOutputDir: host.program.compilerOptions.outputDir!,
       options: {},
     } as any);
@@ -631,15 +620,9 @@ describe("emitter-framework: zod emitter", () => {
       model Baz { prop: Foo }
     `);
 
-    class SingleFileEmitter extends ZodEmitter {
-      programContext() {
-        const outputFile = emitter.createSourceFile("output.ts");
-        return { scope: outputFile.globalScope };
-      }
-    }
     const emitter: AssetEmitter<string> = createAssetEmitter(
       host.program,
-      SingleFileEmitter,
+      SingleFileZodEmitter,
       {
         emitterOutputDir: host.program.compilerOptions.outputDir!,
         options: {},
