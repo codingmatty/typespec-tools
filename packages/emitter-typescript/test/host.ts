@@ -1,7 +1,4 @@
-import {
-  createAssetEmitter,
-  TypeEmitter,
-} from "@typespec/compiler/emitter-framework";
+import { createAssetEmitter } from "@typespec/compiler/emitter-framework";
 import { createTestHost } from "@typespec/compiler/testing";
 
 export async function getHostForTypeSpecFile(
@@ -20,14 +17,13 @@ export async function getHostForTypeSpecFile(
   return host;
 }
 
-export async function emitTypeSpec(
-  Emitter: typeof TypeEmitter<any>,
-  code: string
-) {
+export async function emitTypeSpec(Emitter: any, code: string) {
   const host = await getHostForTypeSpecFile(code);
   const emitter = createAssetEmitter(host.program, Emitter, {
     emitterOutputDir: "tsp-output",
-    options: {},
+    options: {
+      fileName: "testing.ts",
+    },
   } as any);
 
   emitter.emitProgram();

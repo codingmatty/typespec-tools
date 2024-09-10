@@ -1,6 +1,3 @@
-import assert from "assert";
-import * as prettier from "prettier";
-import { describe, it } from "vitest";
 import { Enum, Interface, Model, Operation, Union } from "@typespec/compiler";
 import {
   AssetEmitter,
@@ -13,11 +10,16 @@ import {
   createAssetEmitter,
 } from "@typespec/compiler/emitter-framework";
 
-import { emitTypeSpec, getHostForTypeSpecFile } from "./host.js";
+import assert from "assert";
+import * as prettier from "prettier";
+import { describe, it } from "vitest";
+
 import {
   SingleFileTypescriptEmitter,
   TypescriptEmitter,
 } from "../src/emitter.js";
+import { EmitterOptions } from "../src/lib.js";
+import { emitTypeSpec, getHostForTypeSpecFile } from "./host.js";
 
 const testCode = `
 model Basic { x: string }
@@ -199,7 +201,7 @@ describe("emitter-framework: typescript emitter", () => {
     assert.match(contents, /q?: SomeModel/);
   });
 
-  it.only("emits interfaces", async () => {
+  it("emits interfaces", async () => {
     const contents = await emitTypeSpecToTs(`
       model Foo {
         prop: string;
@@ -496,7 +498,7 @@ describe("emitter-framework: typescript emitter", () => {
       model Baz { prop: Foo }
     `);
 
-    const emitter: AssetEmitter<string> = createAssetEmitter(
+    const emitter: AssetEmitter<string, EmitterOptions> = createAssetEmitter(
       host.program,
       SingleFileTypescriptEmitter,
       {

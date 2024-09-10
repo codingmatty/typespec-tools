@@ -1,6 +1,7 @@
 import * as prettier from "prettier";
 import {
   BooleanLiteral,
+  EmitContext,
   Enum,
   EnumMember,
   getDoc,
@@ -22,6 +23,7 @@ import {
   code,
   CodeTypeEmitter,
   Context,
+  createAssetEmitter,
   Declaration,
   EmittedSourceFile,
   EmitterOutput,
@@ -30,6 +32,7 @@ import {
   SourceFileScope,
   StringBuilder,
 } from "@typespec/compiler/emitter-framework";
+import { EmitterOptions } from "./lib.js";
 
 export function isArrayType(m: Model) {
   return m.name === "Array";
@@ -49,7 +52,7 @@ export const intrinsicNameToTSType = new Map<string, string>([
   ["void", "void"],
 ]);
 
-export class TypescriptEmitter extends CodeTypeEmitter {
+export class TypescriptEmitter extends CodeTypeEmitter<EmitterOptions> {
   // type literals
   booleanLiteral(boolean: BooleanLiteral): EmitterOutput<string> {
     return JSON.stringify(boolean.value);
@@ -321,7 +324,24 @@ export class TypescriptEmitter extends CodeTypeEmitter {
 
 export class SingleFileTypescriptEmitter extends TypescriptEmitter {
   programContext(): Context {
-    const outputFile = this.emitter.createSourceFile("output.ts");
+    const options = this.emitter.getOptions();
+    const outputFile = this.emitter.createSourceFile(
+      options["output-file"] ?? "output.ts"
+    );
     return { scope: outputFile.globalScope };
   }
+}
+
+export async function $onEmit(context: EmitContext) {
+  const assetEmitter = createAssetEmitter(
+    context.program,
+    SingleFileTypescriptEmitter,
+    context
+  );
+
+  // emit my entire TypeSpec program
+  assetEmitter.emitProgram();
+
+  // lastly, write your emit output into the output directory
+  await assetEmitter.writeOutput();
 }
