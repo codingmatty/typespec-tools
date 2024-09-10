@@ -1,6 +1,7 @@
 import * as prettier from "prettier";
 import {
   BooleanLiteral,
+  EmitContext,
   Enum,
   EnumMember,
   getDoc,
@@ -22,6 +23,7 @@ import {
   code,
   CodeTypeEmitter,
   Context,
+  createAssetEmitter,
   Declaration,
   EmittedSourceFile,
   EmitterOutput,
@@ -30,6 +32,7 @@ import {
   SourceFileScope,
   StringBuilder,
 } from "@typespec/compiler/emitter-framework";
+import { EmitterOptions } from "./lib.js";
 
 export function isArrayType(m: Model) {
   return m.name === "Array";
@@ -49,7 +52,7 @@ export const intrinsicNameToTSType = new Map<string, string>([
   ["void", "z.void()"],
 ]);
 
-export class ZodEmitter extends CodeTypeEmitter {
+export class ZodEmitter extends CodeTypeEmitter<EmitterOptions> {
   // type literals
   booleanLiteral(boolean: BooleanLiteral): EmitterOutput<string> {
     return code`z.literal(${JSON.stringify(boolean.value)})`;
@@ -327,7 +330,24 @@ export class ZodEmitter extends CodeTypeEmitter {
 
 export class SingleFileZodEmitter extends ZodEmitter {
   programContext(): Context {
-    const outputFile = this.emitter.createSourceFile("output.ts");
+    const options = this.emitter.getOptions();
+    const outputFile = this.emitter.createSourceFile(
+      options["output-file"] ?? "output.ts"
+    );
     return { scope: outputFile.globalScope };
   }
+}
+
+export async function $onEmit(context: EmitContext) {
+  const assetEmitter = createAssetEmitter(
+    context.program,
+    SingleFileZodEmitter,
+    context
+  );
+
+  // emit my entire TypeSpec program
+  assetEmitter.emitProgram();
+
+  // lastly, write your emit output into the output directory
+  await assetEmitter.writeOutput();
 }

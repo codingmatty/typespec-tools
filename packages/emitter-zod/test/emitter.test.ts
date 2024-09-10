@@ -14,8 +14,9 @@ import assert from "assert";
 import * as prettier from "prettier";
 import { describe, it } from "vitest";
 
-import { emitTypeSpec, getHostForTypeSpecFile } from "./host.js";
 import { SingleFileZodEmitter, ZodEmitter } from "../src/emitter.js";
+import { EmitterOptions } from "../src/lib.js";
+import { emitTypeSpec, getHostForTypeSpecFile } from "./host.js";
 
 const testCode = `
 model Basic { x: string }
@@ -620,7 +621,7 @@ describe("emitter-framework: zod emitter", () => {
       model Baz { prop: Foo }
     `);
 
-    const emitter: AssetEmitter<string> = createAssetEmitter(
+    const emitter: AssetEmitter<string, EmitterOptions> = createAssetEmitter(
       host.program,
       SingleFileZodEmitter,
       {

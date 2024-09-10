@@ -51,4 +51,6 @@ options:
 
 ### Emitter options
 
-TODO
+| Option        | Type   | Default     | Description             |
+| ------------- | ------ | ----------- | ----------------------- |
+| `output-file` | string | "output.ts" | Name of the output file |
