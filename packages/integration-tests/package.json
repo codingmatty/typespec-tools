@@ -1,0 +1,22 @@
+{
+  "name": "@typespec-tools/integration-tests",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "compile": "tsp compile .",
+    "pretest": "npm run compile",
+    "test": "vitest run",
+    "test:watch": "vitest watch"
+  },
+  "devDependencies": {
+    "@typespec/compiler": "0.60.0",
+    "@typespec/http": "0.60.0",
+    "@typespec/rest": "0.60.0",
+    "@typespec/openapi3": "0.60.0",
+    "@typespec-tools/emitter-typescript": "*",
+    "@typespec-tools/emitter-zod": "*",
+    "typescript": "^5.3.3",
+    "vitest": "2.0.5",
+    "zod": "3.23.8"
+  }
+}

@@ -1,0 +1,3 @@
+emit:
+  - "@typespec-tools/emitter-typescript"
+  - "@typespec-tools/emitter-zod"
