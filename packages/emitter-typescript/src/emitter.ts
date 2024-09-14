@@ -52,7 +52,9 @@ export const intrinsicNameToTSType = new Map<string, string>([
   ["void", "void"],
 ]);
 
-export class TypescriptEmitter extends CodeTypeEmitter<EmitterOptions> {
+export class TypescriptEmitter<
+  TEmitterOptions extends object = EmitterOptions,
+> extends CodeTypeEmitter<TEmitterOptions> {
   // type literals
   booleanLiteral(boolean: BooleanLiteral): EmitterOutput<string> {
     return JSON.stringify(boolean.value);
@@ -174,9 +176,13 @@ export class TypescriptEmitter extends CodeTypeEmitter<EmitterOptions> {
   ): EmitterOutput<string> {
     return this.emitter.result.declaration(
       name,
-      code`export type ${name} = {
-      ${this.#operationSignature(operation)}
-    }`
+      code`
+        export type ${name} = (${this.emitter.emitOperationParameters(
+          operation
+        )}) => ${this.emitter.emitOperationReturnType(operation)}
+        export type ${name}Params = Parameters<${name}>;
+        export type ${name}ReturnType = ReturnType<${name}>;
+      `
     );
   }
 
@@ -191,12 +197,6 @@ export class TypescriptEmitter extends CodeTypeEmitter<EmitterOptions> {
       );
     }
     return cb;
-  }
-
-  #operationSignature(operation: Operation) {
-    return code`(${this.emitter.emitOperationParameters(
-      operation
-    )}): ${this.emitter.emitOperationReturnType(operation)}`;
   }
 
   operationReturnType(
@@ -221,7 +221,7 @@ export class TypescriptEmitter extends CodeTypeEmitter<EmitterOptions> {
     operation: Operation,
     name: string
   ): EmitterOutput<string> {
-    return code`${name}${this.#operationSignature(operation)}`;
+    return code`${name}(${this.emitter.emitOperationParameters(operation)}): ${this.emitter.emitOperationReturnType(operation)}`;
   }
 
   enumDeclaration(en: Enum, name: string): EmitterOutput<string> {

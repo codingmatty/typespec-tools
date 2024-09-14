@@ -14,7 +14,7 @@ TypeSpec library for emitting Typescript types from the [TypeSpec](https://types
 ## Features / Roadmap
 
 - [x] Emit basic Typescript types from a TypeSpec file
-- [ ] Add options to configure emitter
+- [ ] Add support for decorators
 
 ## Install
 

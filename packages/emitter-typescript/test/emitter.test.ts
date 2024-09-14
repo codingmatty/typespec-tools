@@ -194,11 +194,14 @@ describe("emitter-framework: typescript emitter", () => {
       op read(x: string, y: int32, z: { inline: true }, q?: SomeModel): string;
     `);
 
-    assert.match(contents, /export type read = {/);
+    assert.match(contents, /export type read = \(/);
     assert.match(contents, /x: string/);
     assert.match(contents, /y: number/);
     assert.match(contents, /z: { inline: true }/);
     assert.match(contents, /q?: SomeModel/);
+    assert.match(contents, /\) => string/);
+    assert.match(contents, /export type readParams = Parameters<read>;/);
+    assert.match(contents, /export type readReturnType = ReturnType<read>;/);
   });
 
   it("emits interfaces", async () => {
