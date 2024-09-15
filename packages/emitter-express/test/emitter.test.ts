@@ -196,7 +196,7 @@ describe("emitter-express", () => {
     it("emits the route callback implementation", () => {
       assert.match(
         contents,
-        /const getPet: PetsHandlers\["getPet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.get\("\/pets\/\{petId\}", \.\.\.handlers\);(\n|.)*\};/
+        /const getPet: PetsHandlers\["getPet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.get\("\/pets\/:petId", \.\.\.handlers\);(\n|.)*\};/
       );
       assert.match(contents, /return \{(\n|.)*getPet,(\n|.)*\};/);
     });
@@ -267,7 +267,7 @@ describe("emitter-express", () => {
     it("emits the route callback implementation", () => {
       assert.match(
         contents,
-        /const updatePet: PetsHandlers\["updatePet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.put\("\/pets\/\{petId\}", \.\.\.handlers\);(\n|.)*\};/
+        /const updatePet: PetsHandlers\["updatePet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.put\("\/pets\/:petId", \.\.\.handlers\);(\n|.)*\};/
       );
       assert.match(contents, /return \{(\n|.)*updatePet,(\n|.)*\};/);
     });

@@ -196,7 +196,7 @@ export class ExpressEmitter extends TypescriptEmitter<EmitterOptions> {
           `${operationName}: (...handlers: Array<${handlerType}>) => void;`
         );
         declarations.routeHandlerFunctions.push(
-          `const ${operationName}: ${namespaceName}Handlers["${operationName}"] = (...handlers) => { router.${operation.verb}('${operation.path}', ...handlers); };`
+          `const ${operationName}: ${namespaceName}Handlers["${operationName}"] = (...handlers) => { router.${operation.verb}('${operation.path.replace(/\{(\w+)\}/, ":$1")}', ...handlers); };`
         );
 
         declarationsByNamespace.set(namespace, declarations);
