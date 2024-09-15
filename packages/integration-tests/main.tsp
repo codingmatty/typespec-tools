@@ -34,12 +34,31 @@ enum petType {
 @route("/pets")
 namespace Pets {
   @get
-  op listPets(): {
+  op listPets(@query type?: petType): {
     @body pets: Pet[];
   };
 
   @get
   op getPet(@path petId: int32): {
+    @body pet: Pet;
+  } | {
+    @body error: NotFoundError;
+  };
+
+  @post
+  op createPet(@body pet: Pet): {
+    @body pet: Pet;
+  };
+
+  @put
+  op updatePet(@path petId: int32, @body pet: Pet): {
+    @body pet: Pet;
+  } | {
+    @body error: NotFoundError;
+  };
+
+  @delete
+  op deletePet(@path petId: int32): {
     @body pet: Pet;
   } | {
     @body error: NotFoundError;

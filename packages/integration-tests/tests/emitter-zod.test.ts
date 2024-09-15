@@ -41,12 +41,12 @@ describe("emitter-zod", () => {
 
     it("validates the args", () => {
       response = { pets: [validPet] };
-      assert.doesNotThrow(() => fn());
+      assert.doesNotThrow(() => fn(undefined));
     });
 
     it("validates the response", () => {
       response = { pets: [invalidPet] as any };
-      assert.throws(() => fn());
+      assert.throws(() => fn(undefined));
     });
   });
 

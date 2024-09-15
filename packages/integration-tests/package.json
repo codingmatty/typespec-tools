@@ -9,12 +9,15 @@
     "test:watch": "vitest watch"
   },
   "devDependencies": {
-    "@typespec/compiler": "0.60.0",
-    "@typespec/http": "0.60.0",
-    "@typespec/rest": "0.60.0",
-    "@typespec/openapi3": "0.60.0",
+    "@typespec-tools/emitter-express": "*",
     "@typespec-tools/emitter-typescript": "*",
     "@typespec-tools/emitter-zod": "*",
+    "@typespec/compiler": "0.60.0",
+    "@typespec/http": "0.60.0",
+    "@typespec/openapi3": "0.60.0",
+    "@typespec/rest": "0.60.0",
+    "body-parser": "^1.20.3",
+    "express": "4.21.0",
     "typescript": "^5.3.3",
     "vitest": "2.0.5",
     "zod": "3.23.8"
