@@ -1,21 +1,13 @@
-import { Enum, Interface, Model, Operation, Union } from "@typespec/compiler";
+import { Model } from "@typespec/compiler";
 import {
-  AssetEmitter,
   Context,
-  EmittedSourceFile,
   EmitterOutput,
-  Scope,
-  SourceFile,
-  TypeSpecDeclaration,
   createAssetEmitter,
 } from "@typespec/compiler/emitter-framework";
-
 import assert from "assert";
-import * as prettier from "prettier";
-import { beforeAll, beforeEach, describe, it } from "vitest";
+import { beforeAll, describe, it } from "vitest";
 
-import { SingleFileExpressEmitter, ExpressEmitter } from "../src/emitter.js";
-import { EmitterOptions } from "../src/lib.js";
+import { SingleFileExpressEmitter } from "../src/emitter.js";
 import { emitTypeSpec, getHostForTypeSpecFile } from "./host.js";
 
 const testCode = `
@@ -59,13 +51,16 @@ namespace Pets {
   };
 
   @post
-  op addPet(@body pet: Pet): void;
+  op createPet(@body pet: Pet): {
+    @body pet: Pet;
+  };
 
   @put
-  op updatePet(
-    @path petId: int32,
-    ...Pet
-  ): Pet;
+  op updatePet(@path petId: int32, ...Pet): {
+    @body pet: Pet;
+  } | {
+    @body error: NotFoundError;
+  };
 }
 
 @route("/animals")
@@ -202,34 +197,37 @@ describe("emitter-express", () => {
     });
   });
 
-  describe("add route", async () => {
+  describe("create route", async () => {
     it("emits the function types", () => {
-      assert.match(contents, /export type addPetParams = \{\};/);
-      assert.match(contents, /export type addPetQuery = \{\};/);
-      assert.match(contents, /export type addPetBody = PetStore.Pet;/);
-      assert.match(contents, /export type addPetResponseBody = void;/);
+      assert.match(contents, /export type createPetParams = \{\};/);
+      assert.match(contents, /export type createPetQuery = \{\};/);
+      assert.match(contents, /export type createPetBody = PetStore.Pet;/);
+      assert.match(
+        contents,
+        /export type createPetResponseBody = \{ pet: PetStore.Pet \};/
+      );
     });
 
     it("emits the handler type", () => {
       assert.match(
         contents,
-        /export type addPetHandler = express.RequestHandler<\n\s+addPetParams,\n\s+addPetResponseBody,\n\s+addPetBody,\n\s+addPetQuery\n\s+>;/
+        /export type createPetHandler = express.RequestHandler<\n\s+createPetParams,\n\s+createPetResponseBody,\n\s+createPetBody,\n\s+createPetQuery\n\s+>;/
       );
     });
 
     it("emits the route callback type", () => {
       assert.match(
         contents,
-        /export interface PetsHandlers \{(\n|.)*addPet: \(\.\.\.handlers: Array<Pets.addPetHandler>\) => void;(\n|.)*\}/
+        /export interface PetsHandlers \{(\n|.)*createPet: \(\.\.\.handlers: Array<Pets.createPetHandler>\) => void;(\n|.)*\}/
       );
     });
 
     it("emits the route callback implementation", () => {
       assert.match(
         contents,
-        /const addPet: PetsHandlers\["addPet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.post\("\/pets", \.\.\.handlers\);(\n|.)*\};/
+        /const createPet: PetsHandlers\["createPet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.post\("\/pets", \.\.\.handlers\);(\n|.)*\};/
       );
-      assert.match(contents, /return \{(\n|.)*addPet,(\n|.)*\};/);
+      assert.match(contents, /return \{(\n|.)*createPet,(\n|.)*\};/);
     });
   });
 
@@ -246,7 +244,7 @@ describe("emitter-express", () => {
       );
       assert.match(
         contents,
-        /export type updatePetResponseBody = PetStore.Pet;/
+        /export type updatePetResponseBody =(\n|.)*\| \{ pet: PetStore.Pet \}(\n|.)*\| \{ error: PetStore.NotFoundError \};/
       );
     });
 
