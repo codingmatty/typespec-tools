@@ -6,7 +6,9 @@
       "cache": false
     },
     "lint": {},
-    "test": {},
+    "test": {
+      "dependsOn": ["build"]
+    },
     "test:watch": {
       "cache": false,
       "persistent": true
