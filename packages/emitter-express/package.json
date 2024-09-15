@@ -1,6 +1,6 @@
 {
   "name": "@typespec-tools/emitter-express",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "repository": "codingmatty/typespec-tools",
   "author": {
     "name": "Matthew Jacobs",
@@ -34,7 +34,6 @@
     "@typespec-tools/eslint-config": "*",
     "@typespec-tools/typescript-config": "*",
     "@typespec-tools/emitter-typescript": "*",
-    
     "babel-jest": "^29.7.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-config-turbo": "^2.0.0",
