@@ -175,7 +175,7 @@ export class ZodEmitter extends CodeTypeEmitter<EmitterOptions> {
   ): EmitterOutput<string> {
     const cb = new StringBuilder();
     if (parameters.properties.size === 1) {
-      const prop = parameters.properties.values().next().value;
+      const prop = Array.from(parameters.properties.values())[0]!;
       return code`${this.emitter.emitTypeReference(prop.type)}${prop.optional ? ".optional()" : ""}`;
     }
     for (const prop of parameters.properties.values()) {
