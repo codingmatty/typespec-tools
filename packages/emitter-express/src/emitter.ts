@@ -106,8 +106,9 @@ export class ExpressEmitter extends TypescriptEmitter<EmitterOptions> {
 
     cb.push(code`export type ${name}Params = {`);
     for (const prop of pathParams) {
+      // Note: scalars are always strings in express
       cb.push(
-        code`${prop.name}${prop.optional ? "?" : ""}: ${this.emitter.emitTypeReference(prop.type)};`
+        code`${prop.name}${prop.optional ? "?" : ""}: ${prop.type.kind === "Scalar" ? "string" : this.emitter.emitTypeReference(prop.type)};`
       );
     }
     cb.push(code`};`);

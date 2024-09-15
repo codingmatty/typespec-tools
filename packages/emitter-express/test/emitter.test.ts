@@ -165,7 +165,7 @@ describe("emitter-express", () => {
 
   describe("get route", async () => {
     it("emits the function types", () => {
-      assert.match(contents, /export type getPetParams = \{ petId: number \};/);
+      assert.match(contents, /export type getPetParams = \{ petId: string \};/);
       assert.match(contents, /export type getPetQuery = \{\};/);
       assert.match(contents, /export type getPetBody = undefined;/);
       assert.match(
@@ -235,7 +235,7 @@ describe("emitter-express", () => {
     it("emits the function types", () => {
       assert.match(
         contents,
-        /export type updatePetParams = \{ petId: number \};/
+        /export type updatePetParams = \{ petId: string \};/
       );
       assert.match(contents, /export type updatePetQuery = \{\};/);
       assert.match(
