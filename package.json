@@ -15,6 +15,7 @@
     "packages/*"
   ],
   "scripts": {
-    "prerelease": "npx turbo lint test build"
+    "prerelease": "turbo lint test build",
+    "release": "changeset publish"
   }
 }
