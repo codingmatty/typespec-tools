@@ -1,6 +1,6 @@
 {
   "name": "@typespec-tools/emitter-zod",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "repository": "codingmatty/typespec-tools",
   "author": {
     "name": "Matthew Jacobs",
