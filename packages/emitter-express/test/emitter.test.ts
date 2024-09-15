@@ -68,6 +68,14 @@ namespace Pets {
   ): Pet;
 }
 
+@route("/animals")
+namespace Animals {
+  @get
+  op listPets(@query type?: petType): {
+    @body pets: Pet[];
+  };
+}
+
 @error
 model NotFoundError {
   code: "NOT_FOUND";
@@ -133,62 +141,62 @@ describe("emitter-express", () => {
       assert.match(contents, /export type listPetsBody = undefined;/);
       assert.match(
         contents,
-        /export type listPetsResponseBody = { pets: Pet\[\] };/
+        /export type listPetsResponseBody = { pets: PetStore.Pet\[\] };/
       );
     });
 
     it("emits the handler type", () => {
       assert.match(
         contents,
-        /export type listPetsHandler = express.RequestHandler<\n\s+listPetsParams,\n\s+listPetsResponseBody,\n\s+listPetsBody,\n\s+listPetsQuery\n>;/
+        /export type listPetsHandler = express.RequestHandler<\n\s+listPetsParams,\n\s+listPetsResponseBody,\n\s+listPetsBody,\n\s+listPetsQuery\n\s+>;/
       );
     });
 
     it("emits the route callback type", () => {
       assert.match(
         contents,
-        /export interface TypedRouter \{(\n|.)*listPets: \(\.\.\.handlers: Array<listPetsHandler>\) => void;(\n|.)*\}/
+        /export interface PetsHandlers \{(\n|.)*listPets: \(\.\.\.handlers: Array<Pets.listPetsHandler>\) => void;(\n|.)*\}/
       );
     });
 
     it("emits the route callback implementation", () => {
       assert.match(
         contents,
-        /const listPets: TypedRouter\["listPets"\] = \(\.\.\.handlers\) => \{[\n\s]*router.get\("\/pets", \.\.\.handlers\);(\n|.)*\};/
+        /const listPets: PetsHandlers\["listPets"\] = \(\.\.\.handlers\) => \{[\n\s]*router.get\("\/pets", \.\.\.handlers\);(\n|.)*\};/
       );
       assert.match(contents, /return \{(\n|.)*listPets,(\n|.)*\};/);
     });
   });
 
   describe("get route", async () => {
-    it.only("emits the function types", () => {
+    it("emits the function types", () => {
       assert.match(contents, /export type getPetParams = \{ petId: number \};/);
       assert.match(contents, /export type getPetQuery = \{\};/);
       assert.match(contents, /export type getPetBody = undefined;/);
       assert.match(
         contents,
-        /export type getPetResponseBody = \{ pet: Pet \} \| \{ error: NotFoundError \};/
+        /export type getPetResponseBody =(\n|.)*\| \{ pet: PetStore.Pet \}(\n|.)*\| \{ error: PetStore.NotFoundError \};/
       );
     });
 
     it("emits the handler type", () => {
       assert.match(
         contents,
-        /export type getPetHandler = express.RequestHandler<\n\s+getPetParams,\n\s+getPetResponseBody,\n\s+getPetBody,\n\s+getPetQuery\n>;/
+        /export type getPetHandler = express.RequestHandler<\n\s+getPetParams,\n\s+getPetResponseBody,\n\s+getPetBody,\n\s+getPetQuery\n\s+>;/
       );
     });
 
     it("emits the route callback type", () => {
       assert.match(
         contents,
-        /export interface TypedRouter \{(\n|.)*getPet: \(\.\.\.handlers: Array<getPetHandler>\) => void;(\n|.)*\}/
+        /export interface PetsHandlers \{(\n|.)*getPet: \(\.\.\.handlers: Array<Pets.getPetHandler>\) => void;(\n|.)*\}/
       );
     });
 
     it("emits the route callback implementation", () => {
       assert.match(
         contents,
-        /const getPet: TypedRouter\["getPet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.get\("\/pets\/\{petId\}", \.\.\.handlers\);(\n|.)*\};/
+        /const getPet: PetsHandlers\["getPet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.get\("\/pets\/\{petId\}", \.\.\.handlers\);(\n|.)*\};/
       );
       assert.match(contents, /return \{(\n|.)*getPet,(\n|.)*\};/);
     });
@@ -198,28 +206,28 @@ describe("emitter-express", () => {
     it("emits the function types", () => {
       assert.match(contents, /export type addPetParams = \{\};/);
       assert.match(contents, /export type addPetQuery = \{\};/);
-      assert.match(contents, /export type addPetBody = Pet;/);
+      assert.match(contents, /export type addPetBody = PetStore.Pet;/);
       assert.match(contents, /export type addPetResponseBody = void;/);
     });
 
     it("emits the handler type", () => {
       assert.match(
         contents,
-        /export type addPetHandler = express.RequestHandler<\n\s+addPetParams,\n\s+addPetResponseBody,\n\s+addPetBody,\n\s+addPetQuery\n>;/
+        /export type addPetHandler = express.RequestHandler<\n\s+addPetParams,\n\s+addPetResponseBody,\n\s+addPetBody,\n\s+addPetQuery\n\s+>;/
       );
     });
 
     it("emits the route callback type", () => {
       assert.match(
         contents,
-        /export interface TypedRouter \{(\n|.)*addPet: \(\.\.\.handlers: Array<addPetHandler>\) => void;(\n|.)*\}/
+        /export interface PetsHandlers \{(\n|.)*addPet: \(\.\.\.handlers: Array<Pets.addPetHandler>\) => void;(\n|.)*\}/
       );
     });
 
     it("emits the route callback implementation", () => {
       assert.match(
         contents,
-        /const addPet: TypedRouter\["addPet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.post\("\/pets", \.\.\.handlers\);(\n|.)*\};/
+        /const addPet: PetsHandlers\["addPet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.post\("\/pets", \.\.\.handlers\);(\n|.)*\};/
       );
       assert.match(contents, /return \{(\n|.)*addPet,(\n|.)*\};/);
     });
@@ -234,31 +242,84 @@ describe("emitter-express", () => {
       assert.match(contents, /export type updatePetQuery = \{\};/);
       assert.match(
         contents,
-        /export type updatePetBody = \{\n\s+id: number;\n\s+name: string;\n\s+age: number;\n\s+kind: petType;\n\};/
+        /export type updatePetBody = \{\n\s+id: number;\n\s+name: string;\n\s+age: number;\n\s+kind: petType;\n\s+\};/
       );
-      assert.match(contents, /export type updatePetResponseBody = Pet;/);
+      assert.match(
+        contents,
+        /export type updatePetResponseBody = PetStore.Pet;/
+      );
     });
 
     it("emits the handler type", () => {
       assert.match(
         contents,
-        /export type updatePetHandler = express.RequestHandler<\n\s+updatePetParams,\n\s+updatePetResponseBody,\n\s+updatePetBody,\n\s+updatePetQuery\n>;/
+        /export type updatePetHandler = express.RequestHandler<\n\s+updatePetParams,\n\s+updatePetResponseBody,\n\s+updatePetBody,\n\s+updatePetQuery\n\s+>;/
       );
     });
 
     it("emits the route callback type", () => {
       assert.match(
         contents,
-        /export interface TypedRouter \{(\n|.)*updatePet: \(\.\.\.handlers: Array<updatePetHandler>\) => void;(\n|.)*\}/
+        /export interface PetsHandlers \{(\n|.)*updatePet: \(\.\.\.handlers: Array<Pets.updatePetHandler>\) => void;(\n|.)*\}/
       );
     });
 
     it("emits the route callback implementation", () => {
       assert.match(
         contents,
-        /const updatePet: TypedRouter\["updatePet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.put\("\/pets\/\{petId\}", \.\.\.handlers\);(\n|.)*\};/
+        /const updatePet: PetsHandlers\["updatePet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.put\("\/pets\/\{petId\}", \.\.\.handlers\);(\n|.)*\};/
       );
       assert.match(contents, /return \{(\n|.)*updatePet,(\n|.)*\};/);
+    });
+  });
+
+  describe('second namespace, "Animals"', async () => {
+    it("emits the function types", () => {
+      assert.match(
+        contents,
+        /export namespace Animals \{(\n|.)*export type listPetsParams = \{\};(\n|.)*\}/
+      );
+      assert.match(
+        contents,
+        /export namespace Animals \{(\n|.)*export type listPetsQuery = { type\?: petType };(\n|.)*\}/
+      );
+      assert.match(
+        contents,
+        /export namespace Animals \{(\n|.)*export type listPetsBody = undefined;(\n|.)*\}/
+      );
+      assert.match(
+        contents,
+        /export namespace Animals \{(\n|.)*export type listPetsResponseBody = { pets: PetStore.Pet\[\] };(\n|.)*\}/
+      );
+    });
+
+    it("emits the handler type", () => {
+      assert.match(
+        contents,
+        /export namespace Animals \{(\n|.)*export type listPetsHandler = express.RequestHandler<\n\s+listPetsParams,\n\s+listPetsResponseBody,\n\s+listPetsBody,\n\s+listPetsQuery\n\s+>;(\n|.)*\}/
+      );
+    });
+
+    it("emits the route callback type", () => {
+      assert.match(
+        contents,
+        /export interface AnimalsHandlers \{(\n|.)*listPets: \(\.\.\.handlers: Array<Animals.listPetsHandler>\) => void;(\n|.)*\}/
+      );
+    });
+
+    it("emits the route callback implementation", () => {
+      assert.match(
+        contents,
+        /const listPets: AnimalsHandlers\["listPets"\] = \(\.\.\.handlers\) => \{[\n\s]*router.get\("\/animals", \.\.\.handlers\);(\n|.)*\};/
+      );
+      assert.match(contents, /return \{(\n|.)*listPets,(\n|.)*\};/);
+    });
+
+    it('emits the "Animals" namespace in the TypedRouter', () => {
+      assert.match(
+        contents,
+        /export interface TypedRouter \{(\n|.)*Animals: AnimalsHandlers;(\n|.)*\}/
+      );
     });
   });
 
@@ -354,79 +415,5 @@ describe("emitter-express", () => {
   //   ].forEach((file) => {
   //     assert(files.has(file), `emits ${file}`);
   //   });
-  // });
-
-  // it("emits to namespaces", async () => {
-  //   const host = await getHostForTypeSpecFile(testCode);
-
-  //   class NamespacedEmitter extends SingleFileExpressEmitter {
-  //     private nsByName: Map<string, Scope<string>> = new Map();
-
-  //     modelDeclarationContext(model: Model): Context {
-  //       const name = this.emitter.emitDeclarationName(model);
-  //       if (!name) return {};
-  //       const nsName = name.slice(0, 1);
-  //       let nsScope = this.nsByName.get(nsName);
-  //       if (!nsScope) {
-  //         nsScope = this.emitter.createScope(
-  //           {},
-  //           nsName,
-  //           this.emitter.getContext().scope
-  //         );
-  //         this.nsByName.set(nsName, nsScope);
-  //       }
-
-  //       return {
-  //         scope: nsScope,
-  //       };
-  //     }
-
-  //     async sourceFile(
-  //       sourceFile: SourceFile<string>
-  //     ): Promise<EmittedSourceFile> {
-  //       const emittedSourceFile = await super.sourceFile(sourceFile);
-  //       emittedSourceFile.contents += emitNamespaces(sourceFile.globalScope);
-  //       emittedSourceFile.contents = await prettier.format(
-  //         emittedSourceFile.contents,
-  //         {
-  //           parser: "typescript",
-  //         }
-  //       );
-  //       return emittedSourceFile;
-
-  //       function emitNamespaces(scope: Scope<string>) {
-  //         let res = "";
-  //         for (const childScope of scope.childScopes) {
-  //           res += emitNamespace(childScope);
-  //         }
-  //         return res;
-  //       }
-  //       function emitNamespace(scope: Scope<string>) {
-  //         let ns = `namespace ${scope.name} {\n`;
-  //         ns += emitNamespaces(scope);
-  //         for (const decl of scope.declarations) {
-  //           ns += decl.value + "\n";
-  //         }
-  //         ns += `}\n`;
-
-  //         return ns;
-  //       }
-  //     }
-  //   }
-  //   const emitter = createAssetEmitter(host.program, NamespacedEmitter, {
-  //     emitterOutputDir: host.program.compilerOptions.outputDir!,
-  //     options: {},
-  //   } as any);
-  //   emitter.emitProgram();
-  //   await emitter.writeOutput();
-  //   const contents = (await host.compilerHost.readFile("tsp-output/output.ts"))
-  //     .text;
-  //   assert.match(contents, /namespace B/);
-  //   assert.match(contents, /namespace R/);
-  //   assert.match(contents, /namespace H/);
-  //   assert.match(contents, /namespace I/);
-  //   assert.match(contents, /namespace D/);
-  //   assert.match(contents, /B\.Basic/);
-  //   assert.match(contents, /B\.Basic/);
   // });
 });
