@@ -13,8 +13,8 @@ TypeSpec library for emitting a helper function to build type-safe Express route
 
 - [x] Emit a function that can build type-safe Express routes
 - [ ] Add support for typed responses based on status codes
-- [ ] Add support for header types
 - [ ] Add support for authorization
+- [ ] Add support for header types
 - [ ] Add support for Zod schema validation of inputs: Path, Query, Body.
 - [ ] Add support for Zod schema validation of output body
 
@@ -53,7 +53,54 @@ options:
 
 ### Examples
 
-TODO
+Given the following Typespec:
+```typespec
+import "@typespec/http";
+
+enum petType {...}
+model Pet {...}
+
+@route("/pets")
+namespace Pets {
+  @get
+  op listPets(@query type?: petType): {
+    @body pets: Pet[];
+  };
+}
+```
+
+This emitter will allow you to implement the following:
+```typescript
+import { createTypedRouter } from 'tsp-output/@typespec-tools/emitter-express/output";
+
+const app = express();
+const router = express.Router();
+
+typedRouter = createTypedRouter(router);
+
+typedRouter.Pets.listPets((req, res) => {
+  // req.query.type is typed as petType enum
+  // the response has type: { pets: Pet[] }
+  res.json({ pets: [...] });
+});
+
+app.use(typedRouter.router);
+```
+
+Alternatively, you can implement a single namespace:
+```typescript
+import { createPetsRouter } from 'tsp-output/@typespec-tools/emitter-express/output";
+
+export const router = express.Router();
+
+typedPetsRouter = createPetsRouter(router);
+
+typedPetsRouter.listPets((req, res) => {
+  // req.query.type is typed as petType enum
+  // the response has type: { pets: Pet[] }
+  res.json({ pets: [...] });
+});
+```
 
 ### Emitter options
 
