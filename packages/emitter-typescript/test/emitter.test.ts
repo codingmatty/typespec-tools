@@ -1,17 +1,13 @@
-import { Enum, Interface, Model, Operation, Union } from "@typespec/compiler";
+import { Model } from "@typespec/compiler";
 import {
   AssetEmitter,
   Context,
-  EmittedSourceFile,
   EmitterOutput,
-  Scope,
-  SourceFile,
   TypeSpecDeclaration,
   createAssetEmitter,
 } from "@typespec/compiler/emitter-framework";
 
 import assert from "assert";
-import * as prettier from "prettier";
 import { describe, it } from "vitest";
 
 import {
@@ -22,15 +18,20 @@ import { EmitterOptions } from "../src/lib.js";
 import { emitTypeSpec, getHostForTypeSpecFile } from "./host.js";
 
 const testCode = `
+namespace Root;
+
 model Basic { x: string }
 model RefsOtherModel { x: Basic, y: UnionDecl }
 model HasNestedLiteral { x: { y: string } }
 model HasArrayProperty { x: string[], y: Basic[] }
 model IsArray is Array<string>;
-model Derived extends Basic { }
 
-@doc("Has a doc")
-model HasDoc { @doc("an x property") x: string }
+namespace WrappedModels {
+  model Derived extends Basic { }
+
+  @doc("Has a doc")
+  model HasDoc { @doc("an x property") x: string }
+}
 
 model Template<T> { prop: T }
 model HasTemplates { x: Template<Basic> }
@@ -38,12 +39,15 @@ model IsTemplate is Template<Basic>;
 model HasRef {
   x: Basic.x;
   y: RefsOtherModel.x;
+  z: Operations.SomeOp;
 }
 
-op SomeOp(x: string): string;
+namespace Operations {
+  op SomeOp(x: string): string;
 
-interface MyInterface {
-  op get(): string;
+  interface MyInterface {
+    op get(): string;
+  }
 }
 
 union UnionDecl {
@@ -58,11 +62,6 @@ enum MyEnum {
 `;
 
 class SingleFileTestEmitter extends SingleFileTypescriptEmitter {
-  programContext(): Context {
-    const outputFile = this.emitter.createSourceFile("output.ts");
-    return { scope: outputFile.globalScope };
-  }
-
   operationReturnTypeReferenceContext(): Context {
     return {
       fromOperation: true,
@@ -351,39 +350,7 @@ describe("emitter-framework: typescript emitter", () => {
     const host = await getHostForTypeSpecFile(testCode);
 
     class ClassPerFileEmitter extends TypescriptEmitter {
-      modelDeclarationContext(model: Model): Context {
-        return this.#declarationContext(model);
-      }
-
-      modelInstantiationContext(model: Model): Context {
-        return this.#declarationContext(model);
-      }
-
-      unionDeclarationContext(union: Union): Context {
-        return this.#declarationContext(union);
-      }
-
-      unionInstantiationContext(union: Union): Context {
-        return this.#declarationContext(union);
-      }
-
-      enumDeclarationContext(en: Enum): Context {
-        return this.#declarationContext(en);
-      }
-
-      arrayDeclarationContext(array: Model): Context {
-        return this.#declarationContext(array);
-      }
-
-      interfaceDeclarationContext(iface: Interface): Context {
-        return this.#declarationContext(iface);
-      }
-
-      operationDeclarationContext(operation: Operation): Context {
-        return this.#declarationContext(operation);
-      }
-
-      #declarationContext(decl: TypeSpecDeclaration) {
+      declarationContext(decl: TypeSpecDeclaration) {
         const name = this.emitter.emitDeclarationName(decl);
         const outputFile = this.emitter.createSourceFile(`${name}.ts`);
 
@@ -422,77 +389,11 @@ describe("emitter-framework: typescript emitter", () => {
   });
 
   it("emits to namespaces", async () => {
-    const host = await getHostForTypeSpecFile(testCode);
-
-    class NamespacedEmitter extends SingleFileTypescriptEmitter {
-      private nsByName: Map<string, Scope<string>> = new Map();
-
-      modelDeclarationContext(model: Model): Context {
-        const name = this.emitter.emitDeclarationName(model);
-        if (!name) return {};
-        const nsName = name.slice(0, 1);
-        let nsScope = this.nsByName.get(nsName);
-        if (!nsScope) {
-          nsScope = this.emitter.createScope(
-            {},
-            nsName,
-            this.emitter.getContext().scope
-          );
-          this.nsByName.set(nsName, nsScope);
-        }
-
-        return {
-          scope: nsScope,
-        };
-      }
-
-      async sourceFile(
-        sourceFile: SourceFile<string>
-      ): Promise<EmittedSourceFile> {
-        const emittedSourceFile = await super.sourceFile(sourceFile);
-        emittedSourceFile.contents += emitNamespaces(sourceFile.globalScope);
-        emittedSourceFile.contents = await prettier.format(
-          emittedSourceFile.contents,
-          {
-            parser: "typescript",
-          }
-        );
-        return emittedSourceFile;
-
-        function emitNamespaces(scope: Scope<string>) {
-          let res = "";
-          for (const childScope of scope.childScopes) {
-            res += emitNamespace(childScope);
-          }
-          return res;
-        }
-        function emitNamespace(scope: Scope<string>) {
-          let ns = `namespace ${scope.name} {\n`;
-          ns += emitNamespaces(scope);
-          for (const decl of scope.declarations) {
-            ns += decl.value + "\n";
-          }
-          ns += `}\n`;
-
-          return ns;
-        }
-      }
-    }
-    const emitter = createAssetEmitter(host.program, NamespacedEmitter, {
-      emitterOutputDir: host.program.compilerOptions.outputDir!,
-      options: {},
-    } as any);
-    emitter.emitProgram();
-    await emitter.writeOutput();
-    const contents = (await host.compilerHost.readFile("tsp-output/output.ts"))
-      .text;
-    assert.match(contents, /namespace B/);
-    assert.match(contents, /namespace R/);
-    assert.match(contents, /namespace H/);
-    assert.match(contents, /namespace I/);
-    assert.match(contents, /namespace D/);
-    assert.match(contents, /B\.Basic/);
-    assert.match(contents, /B\.Basic/);
+    const contents = await emitTypeSpecToTs(testCode);
+    assert.match(contents, /namespace Root/);
+    assert.match(contents, /namespace Operations/);
+    assert.match(contents, /namespace WrappedModels/);
+    assert.match(contents, /Operations\.SomeOp/);
   });
 
   it("handles circular references", async () => {

@@ -9,6 +9,7 @@ import {
   IntrinsicType,
   Model,
   ModelProperty,
+  Namespace,
   NumericLiteral,
   Operation,
   Scalar,
@@ -31,6 +32,7 @@ import {
   SourceFile,
   SourceFileScope,
   StringBuilder,
+  TypeSpecDeclaration,
 } from "@typespec/compiler/emitter-framework";
 import { EmitterOptions } from "./lib.js";
 
@@ -52,9 +54,109 @@ export const intrinsicNameToTSType = new Map<string, string>([
   ["void", "void"],
 ]);
 
+function emitNamespaces(scope: Scope<string>) {
+  let res = "";
+  for (const childScope of scope.childScopes) {
+    res += emitNamespace(childScope);
+  }
+  return res;
+}
+function emitNamespace(scope: Scope<string>) {
+  let ns = `namespace ${scope.name} {\n`;
+  ns += emitNamespaces(scope);
+  for (const decl of scope.declarations) {
+    ns += decl.value + "\n";
+  }
+  ns += `}\n`;
+
+  return ns;
+}
+
+function getNamespaceChain(decl: { namespace?: Namespace }): string[] {
+  let ns = [decl.namespace?.name];
+  let parent = decl.namespace?.namespace;
+  while (parent) {
+    ns.push(parent.name);
+    parent = parent.namespace;
+  }
+  return ns.filter((n): n is string => !!n).reverse();
+}
+
 export class TypescriptEmitter<
   TEmitterOptions extends object = EmitterOptions,
 > extends CodeTypeEmitter<TEmitterOptions> {
+  private nsByName: Map<string, Scope<string>> = new Map();
+
+  declarationContext(
+    decl: TypeSpecDeclaration & { namespace?: Namespace }
+  ): Context {
+    const name = decl.namespace?.name;
+    if (!name) return {};
+
+    const namespaceChain = getNamespaceChain(decl);
+
+    let nsScope = this.nsByName.get(name);
+    if (!nsScope) {
+      // If there is no scope for the namespace, create one for each
+      // namespace in the chain.
+      let parentScope: Scope<string> | undefined;
+      while (namespaceChain.length > 0) {
+        const ns = namespaceChain.shift();
+        if (!ns) {
+          break;
+        }
+        nsScope = this.nsByName.get(ns);
+        if (nsScope) {
+          parentScope = nsScope;
+          continue;
+        }
+        nsScope = this.emitter.createScope(
+          {},
+          ns,
+          parentScope ?? this.emitter.getContext().scope
+        );
+        this.nsByName.set(ns, nsScope);
+        parentScope = nsScope;
+      }
+    }
+
+    return {
+      scope: nsScope,
+    };
+  }
+
+  modelDeclarationContext(model: Model): Context {
+    return this.declarationContext(model);
+  }
+
+  modelInstantiationContext(model: Model): Context {
+    return this.declarationContext(model);
+  }
+
+  unionDeclarationContext(union: Union): Context {
+    return this.declarationContext(union);
+  }
+
+  unionInstantiationContext(union: Union): Context {
+    return this.declarationContext(union);
+  }
+
+  enumDeclarationContext(en: Enum): Context {
+    return this.declarationContext(en);
+  }
+
+  arrayDeclarationContext(array: Model): Context {
+    return this.declarationContext(array);
+  }
+
+  interfaceDeclarationContext(iface: Interface): Context {
+    return this.declarationContext(iface);
+  }
+
+  operationDeclarationContext(operation: Operation): Context {
+    return this.declarationContext(operation);
+  }
+
   // type literals
   booleanLiteral(boolean: BooleanLiteral): EmitterOutput<string> {
     return JSON.stringify(boolean.value);
@@ -311,6 +413,8 @@ export class TypescriptEmitter<
     for (const decl of sourceFile.globalScope.declarations) {
       emittedSourceFile.contents += decl.value + "\n";
     }
+
+    emittedSourceFile.contents += emitNamespaces(sourceFile.globalScope);
 
     emittedSourceFile.contents = await prettier.format(
       emittedSourceFile.contents,
