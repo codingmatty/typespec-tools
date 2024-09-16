@@ -177,7 +177,8 @@ export class TypescriptEmitter<
         code`export type ${scalarName} = ${this.emitter.emitTypeReference(scalar.baseScalar)}`
       );
     } else if (!intrinsicNameToTSType.has(scalarName)) {
-      throw new Error("Unknown scalar type " + scalarName);
+      // TODO: Add a warning here
+      return this.emitter.result.rawCode("any");
     }
 
     const typeCode = intrinsicNameToTSType.get(scalarName)!;
@@ -186,7 +187,8 @@ export class TypescriptEmitter<
 
   intrinsic(intrinsic: IntrinsicType, name: string): EmitterOutput<string> {
     if (!intrinsicNameToTSType.has(name)) {
-      throw new Error("Unknown intrinsic type " + name);
+      // TODO: Add a warning here
+      return this.emitter.result.rawCode("any");
     }
 
     const code = intrinsicNameToTSType.get(name)!;
