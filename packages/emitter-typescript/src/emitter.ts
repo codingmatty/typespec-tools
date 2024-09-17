@@ -69,10 +69,10 @@ export class TypescriptEmitter<
   }
   emitNamespace(scope: Scope<string>) {
     let ns = `export namespace ${scope.name} {\n`;
-    ns += this.emitNamespaces(scope);
     for (const decl of scope.declarations) {
       ns += decl.value + "\n";
     }
+    ns += this.emitNamespaces(scope);
     ns += `}\n`;
 
     return ns;

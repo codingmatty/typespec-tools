@@ -1,12 +1,13 @@
 import { assert, describe, it } from "vitest";
 import { z } from "zod";
 
-import {
-  PetSchema,
-  getPetSchema,
-  listPetsSchema,
+import { PetStore } from "../tsp-output/@typespec-tools/emitter-zod/output";
+
+const {
   petTypeEnum,
-} from "../tsp-output/@typespec-tools/emitter-zod/output";
+  PetSchema,
+  Pets: { getPetSchema, listPetsSchema },
+} = PetStore;
 
 const validPet: z.infer<typeof PetSchema> = {
   id: 123,
@@ -31,7 +32,7 @@ describe("emitter-zod", () => {
     it("invalidates an invalid pet", () => {
       const result = PetSchema.safeParse(invalidPet);
       assert.isFalse(result.success);
-      assert.equal(result.error.errors.length, 3);
+      assert.equal(result.error?.errors.length, 3);
     });
   });
 

@@ -5,10 +5,12 @@ import {
   Enum,
   EnumMember,
   getDoc,
+  getNamespaceFullName,
   Interface,
   IntrinsicType,
   Model,
   ModelProperty,
+  Namespace,
   NumericLiteral,
   Operation,
   Scalar,
@@ -53,6 +55,96 @@ export const intrinsicNameToTSType = new Map<string, string>([
 ]);
 
 export class ZodEmitter extends CodeTypeEmitter<EmitterOptions> {
+  protected nsByName: Map<string, Scope<string>> = new Map();
+
+  emitNamespaces(scope: Scope<string>) {
+    let res = "";
+    for (const childScope of scope.childScopes) {
+      res += this.emitNamespace(childScope);
+    }
+    return res;
+  }
+  emitNamespace(scope: Scope<string>) {
+    let ns = `export namespace ${scope.name} {\n`;
+    for (const decl of scope.declarations) {
+      ns += decl.value + "\n";
+    }
+    ns += this.emitNamespaces(scope);
+    ns += `}\n`;
+
+    return ns;
+  }
+
+  declarationContext(decl: { namespace?: Namespace }): Context {
+    const name = decl.namespace?.name;
+    if (!name) return {};
+
+    const namespaceChain = decl.namespace
+      ? getNamespaceFullName(decl.namespace).split(".")
+      : [];
+
+    let nsScope = this.nsByName.get(name);
+    if (!nsScope) {
+      // If there is no scope for the namespace, create one for each
+      // namespace in the chain.
+      let parentScope: Scope<string> | undefined;
+      while (namespaceChain.length > 0) {
+        const ns = namespaceChain.shift();
+        if (!ns) {
+          break;
+        }
+        nsScope = this.nsByName.get(ns);
+        if (nsScope) {
+          parentScope = nsScope;
+          continue;
+        }
+        nsScope = this.emitter.createScope(
+          {},
+          ns,
+          parentScope ?? this.emitter.getContext().scope
+        );
+        this.nsByName.set(ns, nsScope);
+        parentScope = nsScope;
+      }
+    }
+
+    return {
+      scope: nsScope,
+    };
+  }
+
+  modelDeclarationContext(model: Model): Context {
+    return this.declarationContext(model);
+  }
+
+  modelInstantiationContext(model: Model): Context {
+    return this.declarationContext(model);
+  }
+
+  unionDeclarationContext(union: Union): Context {
+    return this.declarationContext(union);
+  }
+
+  unionInstantiationContext(union: Union): Context {
+    return this.declarationContext(union);
+  }
+
+  enumDeclarationContext(en: Enum): Context {
+    return this.declarationContext(en);
+  }
+
+  arrayDeclarationContext(array: Model): Context {
+    return this.declarationContext(array);
+  }
+
+  interfaceDeclarationContext(iface: Interface): Context {
+    return this.declarationContext(iface);
+  }
+
+  operationDeclarationContext(operation: Operation): Context {
+    return this.declarationContext(operation);
+  }
+
   // type literals
   booleanLiteral(boolean: BooleanLiteral): EmitterOutput<string> {
     return code`z.literal(${JSON.stringify(boolean.value)})`;
@@ -317,6 +409,8 @@ export class ZodEmitter extends CodeTypeEmitter<EmitterOptions> {
     for (const decl of sourceFile.globalScope.declarations) {
       emittedSourceFile.contents += decl.value + "\n";
     }
+
+    emittedSourceFile.contents += this.emitNamespaces(sourceFile.globalScope);
 
     emittedSourceFile.contents = await prettier.format(
       emittedSourceFile.contents,

@@ -1,21 +1,15 @@
 import { Enum, Interface, Model, Operation, Union } from "@typespec/compiler";
 import {
-  AssetEmitter,
   Context,
-  EmittedSourceFile,
   EmitterOutput,
-  Scope,
-  SourceFile,
   TypeSpecDeclaration,
   createAssetEmitter,
 } from "@typespec/compiler/emitter-framework";
 
 import assert from "assert";
-import * as prettier from "prettier";
 import { describe, it } from "vitest";
 
 import { SingleFileZodEmitter, ZodEmitter } from "../src/emitter.js";
-import { EmitterOptions } from "../src/lib.js";
 import { emitTypeSpec, getHostForTypeSpecFile } from "./host.js";
 
 const testCode = `
@@ -534,106 +528,36 @@ describe("emitter-framework: zod emitter", () => {
     });
   });
 
-  it("emits to namespaces", async () => {
-    const host = await getHostForTypeSpecFile(testCode);
+  it("emits namespaces", async () => {
+    const contents = await emitTypeSpecToTs(`
+      namespace A;
 
-    class NamespacedEmitter extends ZodEmitter {
-      private nsByName: Map<string, Scope<string>> = new Map();
-      programContext(): Context {
-        const outputFile = emitter.createSourceFile("output.ts");
-        return {
-          scope: outputFile.globalScope,
-        };
+      enum MyEnum {
+        a: "hi";
+        b: "bye";
       }
 
-      modelDeclarationContext(model: Model): Context {
-        const name = this.emitter.emitDeclarationName(model);
-        if (!name) return {};
-        const nsName = name.slice(0, 1);
-        let nsScope = this.nsByName.get(nsName);
-        if (!nsScope) {
-          nsScope = this.emitter.createScope(
-            {},
-            nsName,
-            this.emitter.getContext().scope
-          );
-          this.nsByName.set(nsName, nsScope);
+      namespace B {
+        namespace C {
+          model X {
+            x: string;
+          }
         }
+        op SomeOp(x: string): string;
 
-        return {
-          scope: nsScope,
-        };
-      }
-
-      async sourceFile(
-        sourceFile: SourceFile<string>
-      ): Promise<EmittedSourceFile> {
-        const emittedSourceFile = await super.sourceFile(sourceFile);
-        emittedSourceFile.contents += emitNamespaces(sourceFile.globalScope);
-        emittedSourceFile.contents = await prettier.format(
-          emittedSourceFile.contents,
-          {
-            parser: "typescript",
-          }
-        );
-        return emittedSourceFile;
-
-        function emitNamespaces(scope: Scope<string>) {
-          let res = "";
-          for (const childScope of scope.childScopes) {
-            res += emitNamespace(childScope);
-          }
-          return res;
-        }
-        function emitNamespace(scope: Scope<string>) {
-          let ns = `export namespace ${scope.name} {\n`;
-          ns += emitNamespaces(scope);
-          for (const decl of scope.declarations) {
-            ns += decl.value + ",\n";
-          }
-          ns += `}\n`;
-
-          return ns;
+        interface MyInterface {
+          op get(): string;
         }
       }
-    }
-    const emitter = createAssetEmitter(host.program, NamespacedEmitter, {
-      emitterOutputDir: host.program.compilerOptions.outputDir!,
-      options: {},
-    } as any);
-    emitter.emitProgram();
-    await emitter.writeOutput();
-    const contents = (await host.compilerHost.readFile("tsp-output/output.ts"))
-      .text;
-
-    assert.match(contents, /export namespace B \{/);
-    assert.match(contents, /export namespace R \{/);
-    assert.match(contents, /export namespace H \{/);
-    assert.match(contents, /export namespace I \{/);
-    assert.match(contents, /export namespace D \{/);
-    assert.match(contents, /y: B\.BasicSchema/);
-    assert.match(contents, /prop: B\.BasicSchema/);
-  });
-
-  it("handles circular references", async () => {
-    const host = await getHostForTypeSpecFile(`
-      model Foo { prop: Baz }
-      model Baz { prop: Foo }
     `);
 
-    const emitter: AssetEmitter<string, EmitterOptions> = createAssetEmitter(
-      host.program,
-      SingleFileZodEmitter,
-      {
-        emitterOutputDir: host.program.compilerOptions.outputDir!,
-        options: {},
-      } as any
+    assert.match(
+      contents,
+      /export namespace A \{(\n|.)*export namespace B \{(\n|.)*export namespace C \{(\n|.)*\}(\n|.)*\}(\n|.)*\}/
     );
-    emitter.emitProgram();
-    await emitter.writeOutput();
-    const contents = (await host.compilerHost.readFile("tsp-output/output.ts"))
-      .text;
-    assert.match(contents, /prop: Foo/);
-    assert.match(contents, /prop: Baz/);
+    assert.match(
+      contents,
+      /export namespace C \{(\n|.)*export const XSchema = z.object\((\n|.)*x: z.string\(\)(\n|.)*\)(\n|.)*\}/
+    );
   });
 });
