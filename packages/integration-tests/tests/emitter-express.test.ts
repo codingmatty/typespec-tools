@@ -4,9 +4,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import {
   createTypedRouter,
   PetStore,
-  petType,
   TypedRouter,
-  Pets,
 } from "../tsp-output/@typespec-tools/emitter-express/output";
 import bodyParser = require("body-parser");
 
@@ -23,13 +21,13 @@ function startServer() {
 }
 
 const pets: PetStore.Pet[] = [
-  { id: 1, name: "Fluffy", age: 3, kind: petType.dog },
-  { id: 2, name: "Rex", age: 8, kind: petType.cat },
-  { id: 3, name: "Charlie", age: 10, kind: petType.bird },
-  { id: 4, name: "Bella", age: 2, kind: petType.fish },
-  { id: 5, name: "Max", age: 4, kind: petType.dog },
-  { id: 6, name: "Lucy", age: 5, kind: petType.cat },
-  { id: 7, name: "Tucker", age: 1, kind: petType.reptile },
+  { id: 1, name: "Fluffy", age: 3, kind: PetStore.petType.dog },
+  { id: 2, name: "Rex", age: 8, kind: PetStore.petType.cat },
+  { id: 3, name: "Charlie", age: 10, kind: PetStore.petType.bird },
+  { id: 4, name: "Bella", age: 2, kind: PetStore.petType.fish },
+  { id: 5, name: "Max", age: 4, kind: PetStore.petType.dog },
+  { id: 6, name: "Lucy", age: 5, kind: PetStore.petType.cat },
+  { id: 7, name: "Tucker", age: 1, kind: PetStore.petType.reptile },
 ];
 
 describe("emitter-express", () => {
@@ -44,7 +42,7 @@ describe("emitter-express", () => {
 
   describe('GET "/pets"', () => {
     beforeAll(() => {
-      typedRouter.Pets.listPets((req, res) => {
+      typedRouter.PetStorePets.listPets((req, res) => {
         const filteredPets = pets.filter((pet) => {
           return !req.query.type || pet.kind === req.query.type;
         });
@@ -66,7 +64,7 @@ describe("emitter-express", () => {
     it("should return a list of pets for specific type", async () => {
       const res = await fetch("http://localhost:3456/pets?type=dog");
       const data = (await res.json()) as Extract<
-        Pets.listPetsResponseBody,
+        PetStore.Pets.listPetsResponseBody,
         { pets: any }
       >;
       expect(data.pets).toHaveLength(2);
@@ -75,7 +73,7 @@ describe("emitter-express", () => {
 
   describe('GET "/pets/:id"', () => {
     beforeAll(() => {
-      typedRouter.Pets.getPet((req, res) => {
+      typedRouter.PetStorePets.getPet((req, res) => {
         const pet = pets.find((pet) => {
           return pet.id.toString() === req.params.petId;
         });
@@ -111,7 +109,7 @@ describe("emitter-express", () => {
 
   describe('POST "/pets"', () => {
     beforeAll(() => {
-      typedRouter.Pets.createPet((req, res) => {
+      typedRouter.PetStorePets.createPet((req, res) => {
         const pet: PetStore.Pet = req.body;
         // pets.push(pet);
         res.json({ pet });
@@ -126,7 +124,7 @@ describe("emitter-express", () => {
           id: 8,
           name: "Daisy",
           age: 6,
-          kind: petType.cat,
+          kind: PetStore.petType.cat,
         }),
       });
       expect(res.status).toBe(200);
@@ -140,25 +138,25 @@ describe("emitter-express", () => {
           id: 8,
           name: "Daisy",
           age: 6,
-          kind: petType.cat,
+          kind: PetStore.petType.cat,
         }),
       });
       const data = (await res.json()) as Extract<
-        Pets.createPetResponseBody,
+        PetStore.Pets.createPetResponseBody,
         { pet: any }
       >;
       expect(data.pet).toMatchObject({
         id: 8,
         name: "Daisy",
         age: 6,
-        kind: petType.cat,
+        kind: PetStore.petType.cat,
       });
     });
   });
 
   describe('PUT "/pets/:id"', () => {
     beforeAll(() => {
-      typedRouter.Pets.updatePet((req, res) => {
+      typedRouter.PetStorePets.updatePet((req, res) => {
         const pet = pets.find((pet) => {
           return pet.id.toString() === req.params.petId;
         });
@@ -206,7 +204,7 @@ describe("emitter-express", () => {
   describe('DELETE "/pets/:id"', () => {
     beforeAll(() => {
       const tempPets = [...pets];
-      typedRouter.Pets.deletePet((req, res) => {
+      typedRouter.PetStorePets.deletePet((req, res) => {
         const index = tempPets.findIndex((pet) => {
           return pet.id.toString() === req.params.petId;
         });
@@ -232,7 +230,7 @@ describe("emitter-express", () => {
     it("should return the deleted pet", async () => {
       const res = await fetch("http://localhost:3456/pets/1");
       const data = (await res.json()) as Extract<
-        Pets.deletePetResponseBody,
+        PetStore.Pets.deletePetResponseBody,
         { pet: any }
       >;
       expect(data.pet).toMatchObject(pets[0]!);

@@ -85,7 +85,7 @@ function getNamespaceChain(decl: { namespace?: Namespace }): string[] {
 export class TypescriptEmitter<
   TEmitterOptions extends object = EmitterOptions,
 > extends CodeTypeEmitter<TEmitterOptions> {
-  private nsByName: Map<string, Scope<string>> = new Map();
+  protected nsByName: Map<string, Scope<string>> = new Map();
 
   declarationContext(
     decl: TypeSpecDeclaration & { namespace?: Namespace }
