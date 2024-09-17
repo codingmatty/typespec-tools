@@ -1,5 +1,16 @@
 # @typespec-tools/emitter-express
 
+## 0.3.0
+
+### Minor Changes
+
+- 52a1fff: emit namespace blocks
+- a519e68: add children routes to parent route handlers response
+
+### Patch Changes
+
+- dcfc88d: fix namespace exporting
+
 ## 0.2.2
 
 ## 0.2.1
