@@ -1,8 +1,8 @@
 import * as prettier from "prettier";
 import {
   EmitContext,
+  getNamespaceFullName,
   ModelProperty,
-  Namespace,
   Operation,
 } from "@typespec/compiler";
 import {
@@ -51,16 +51,6 @@ function emitNamespace(scope: Scope<string>) {
   ns += `}\n`;
 
   return ns;
-}
-
-function getNamespaceChain(decl: { namespace?: Namespace }): string[] {
-  let ns = [decl.namespace?.name];
-  let parent = decl.namespace?.namespace;
-  while (parent) {
-    ns.push(parent.name);
-    parent = parent.namespace;
-  }
-  return ns.filter((n): n is string => !!n).reverse();
 }
 
 export class ExpressEmitter extends TypescriptEmitter<EmitterOptions> {
@@ -161,7 +151,9 @@ export class ExpressEmitter extends TypescriptEmitter<EmitterOptions> {
       for (const operation of httpService.operations) {
         const namespace =
           operation.operation.namespace?.name ?? httpService.namespace.name;
-        const namespaceChain = getNamespaceChain(operation.operation);
+        const namespaceChain = operation.operation.namespace
+          ? getNamespaceFullName(operation.operation.namespace).split(".")
+          : [];
         const declarations = declarationsByNamespace.get(namespace) ?? {
           typedRouterCallbackTypes: [],
           routeHandlerFunctions: [],
@@ -195,6 +187,8 @@ export class ExpressEmitter extends TypescriptEmitter<EmitterOptions> {
       },
     ] of declarationsByNamespace) {
       const nsScope = this.nsByName.get(namespaceName);
+      const childrenOperations = nsScope?.childScopes;
+
       nsScope?.declarations.push(
         new Declaration(
           "",
@@ -202,6 +196,7 @@ export class ExpressEmitter extends TypescriptEmitter<EmitterOptions> {
           `\n
         export interface Handlers {
           ${typedRouterCallbackTypes.join("\n")}
+          ${childrenOperations?.map((c) => `${c.name}: ${c.name}.Handlers;`).join("\n")}
         }
       `
         )
@@ -212,7 +207,14 @@ export class ExpressEmitter extends TypescriptEmitter<EmitterOptions> {
             ${routeHandlerFunctions.join("\n")}
   
             return {
-              ${operationNames.join(",\n")}
+              ${[
+                ...operationNames,
+                childrenOperations?.map(
+                  (c) =>
+                    `${c.name}: create${namespaceChain.join("")}${c.name}Handlers(router)`
+                ),
+              ].join(",\n")}
+              
             };
           }`
       );

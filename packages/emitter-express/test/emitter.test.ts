@@ -136,7 +136,7 @@ describe("emitter-express", () => {
       assert.match(contents, /export type listPetsBody = undefined;/);
       assert.match(
         contents,
-        /export type listPetsResponseBody = { pets: PetStore.Pet\[\] };/
+        /export type listPetsResponseBody = { pets: Pet\[\] };/
       );
     });
 
@@ -150,14 +150,14 @@ describe("emitter-express", () => {
     it("emits the route callback type", () => {
       assert.match(
         contents,
-        /export interface PetsHandlers \{(\n|.)*listPets: \(\.\.\.handlers: Array<Pets.listPetsHandler>\) => void;(\n|.)*\}/
+        /export interface Handlers \{(\n|.)*listPets: \(\.\.\.handlers: Array<listPetsHandler>\) => void;(\n|.)*\}/
       );
     });
 
     it("emits the route callback implementation", () => {
       assert.match(
         contents,
-        /const listPets: PetsHandlers\["listPets"\] = \(\.\.\.handlers\) => \{[\n\s]*router.get\("\/pets", \.\.\.handlers\);(\n|.)*\};/
+        /const listPets: PetStore.Pets.Handlers\["listPets"\] = \(\.\.\.handlers\) => \{[\n\s]*router.get\("\/pets", \.\.\.handlers\);(\n|.)*\};/
       );
       assert.match(contents, /return \{(\n|.)*listPets,(\n|.)*\};/);
     });
@@ -170,7 +170,7 @@ describe("emitter-express", () => {
       assert.match(contents, /export type getPetBody = undefined;/);
       assert.match(
         contents,
-        /export type getPetResponseBody =(\n|.)*\| \{ pet: PetStore.Pet \}(\n|.)*\| \{ error: PetStore.NotFoundError \};/
+        /export type getPetResponseBody = \{ pet: Pet \} \| \{ error: NotFoundError \};/
       );
     });
 
@@ -184,14 +184,14 @@ describe("emitter-express", () => {
     it("emits the route callback type", () => {
       assert.match(
         contents,
-        /export interface PetsHandlers \{(\n|.)*getPet: \(\.\.\.handlers: Array<Pets.getPetHandler>\) => void;(\n|.)*\}/
+        /export interface Handlers \{(\n|.)*getPet: \(\.\.\.handlers: Array<getPetHandler>\) => void;(\n|.)*\}/
       );
     });
 
     it("emits the route callback implementation", () => {
       assert.match(
         contents,
-        /const getPet: PetsHandlers\["getPet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.get\("\/pets\/:petId", \.\.\.handlers\);(\n|.)*\};/
+        /const getPet: PetStore.Pets.Handlers\["getPet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.get\("\/pets\/:petId", \.\.\.handlers\);(\n|.)*\};/
       );
       assert.match(contents, /return \{(\n|.)*getPet,(\n|.)*\};/);
     });
@@ -201,10 +201,10 @@ describe("emitter-express", () => {
     it("emits the function types", () => {
       assert.match(contents, /export type createPetParams = \{\};/);
       assert.match(contents, /export type createPetQuery = \{\};/);
-      assert.match(contents, /export type createPetBody = PetStore.Pet;/);
+      assert.match(contents, /export type createPetBody = Pet;/);
       assert.match(
         contents,
-        /export type createPetResponseBody = \{ pet: PetStore.Pet \};/
+        /export type createPetResponseBody = \{ pet: Pet \};/
       );
     });
 
@@ -218,14 +218,14 @@ describe("emitter-express", () => {
     it("emits the route callback type", () => {
       assert.match(
         contents,
-        /export interface PetsHandlers \{(\n|.)*createPet: \(\.\.\.handlers: Array<Pets.createPetHandler>\) => void;(\n|.)*\}/
+        /export interface Handlers \{(\n|.)*createPet: \(\.\.\.handlers: Array<createPetHandler>\) => void;(\n|.)*\}/
       );
     });
 
     it("emits the route callback implementation", () => {
       assert.match(
         contents,
-        /const createPet: PetsHandlers\["createPet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.post\("\/pets", \.\.\.handlers\);(\n|.)*\};/
+        /const createPet: PetStore.Pets.Handlers\["createPet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.post\("\/pets", \.\.\.handlers\);(\n|.)*\};/
       );
       assert.match(contents, /return \{(\n|.)*createPet,(\n|.)*\};/);
     });
@@ -244,7 +244,7 @@ describe("emitter-express", () => {
       );
       assert.match(
         contents,
-        /export type updatePetResponseBody =(\n|.)*\| \{ pet: PetStore.Pet \}(\n|.)*\| \{ error: PetStore.NotFoundError \};/
+        /export type updatePetResponseBody = \{ pet: Pet \} \| \{ error: NotFoundError \};/
       );
     });
 
@@ -258,14 +258,14 @@ describe("emitter-express", () => {
     it("emits the route callback type", () => {
       assert.match(
         contents,
-        /export interface PetsHandlers \{(\n|.)*updatePet: \(\.\.\.handlers: Array<Pets.updatePetHandler>\) => void;(\n|.)*\}/
+        /export interface Handlers \{(\n|.)*updatePet: \(\.\.\.handlers: Array<updatePetHandler>\) => void;(\n|.)*\}/
       );
     });
 
     it("emits the route callback implementation", () => {
       assert.match(
         contents,
-        /const updatePet: PetsHandlers\["updatePet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.put\("\/pets\/:petId", \.\.\.handlers\);(\n|.)*\};/
+        /const updatePet: PetStore.Pets.Handlers\["updatePet"\] = \(\.\.\.handlers\) => \{[\n\s]*router.put\("\/pets\/:petId", \.\.\.handlers\);(\n|.)*\};/
       );
       assert.match(contents, /return \{(\n|.)*updatePet,(\n|.)*\};/);
     });
@@ -287,7 +287,7 @@ describe("emitter-express", () => {
       );
       assert.match(
         contents,
-        /export namespace Animals \{(\n|.)*export type listPetsResponseBody = { pets: PetStore.Pet\[\] };(\n|.)*\}/
+        /export namespace Animals \{(\n|.)*export type listPetsResponseBody = { pets: Pet\[\] };(\n|.)*\}/
       );
     });
 
@@ -301,14 +301,14 @@ describe("emitter-express", () => {
     it("emits the route callback type", () => {
       assert.match(
         contents,
-        /export interface AnimalsHandlers \{(\n|.)*listPets: \(\.\.\.handlers: Array<Animals.listPetsHandler>\) => void;(\n|.)*\}/
+        /export interface Handlers \{(\n|.)*listPets: \(\.\.\.handlers: Array<listPetsHandler>\) => void;(\n|.)*\}/
       );
     });
 
     it("emits the route callback implementation", () => {
       assert.match(
         contents,
-        /const listPets: AnimalsHandlers\["listPets"\] = \(\.\.\.handlers\) => \{[\n\s]*router.get\("\/animals", \.\.\.handlers\);(\n|.)*\};/
+        /const listPets: PetStore.Animals.Handlers\["listPets"\] = \(\.\.\.handlers\) => \{[\n\s]*router.get\("\/animals", \.\.\.handlers\);(\n|.)*\};/
       );
       assert.match(contents, /return \{(\n|.)*listPets,(\n|.)*\};/);
     });
@@ -316,7 +316,7 @@ describe("emitter-express", () => {
     it('emits the "Animals" namespace in the TypedRouter', () => {
       assert.match(
         contents,
-        /export interface TypedRouter \{(\n|.)*Animals: AnimalsHandlers;(\n|.)*\}/
+        /export interface TypedRouter \{(\n|.)*PetStoreAnimals: PetStore.Animals.Handlers;(\n|.)*\}/
       );
     });
   });
@@ -339,6 +339,57 @@ describe("emitter-express", () => {
     // some light assertions
     assert.match(contents, /export interface TypedRouter/);
     assert.match(contents, /export function createTypedRouter/);
+  });
+
+  describe("namespaces", async () => {
+    beforeAll(async () => {
+      contents = await emitTypeSpecToTs(`
+      import "@typespec/http";
+      using TypeSpec.Http;
+
+      
+      @server("https://example.com", "Single server endpoint")
+      namespace PetStore;
+
+      model Pet {
+        id: int32;
+        name: string;
+        age: int32;
+        kind: string;
+      }
+
+      @route("/pets")
+      namespace Pets {
+        @get
+        op listPets(@query type?: string): {
+          @body pets: Pet[];
+        };
+
+        @route("/{type}")
+        namespace ByType {
+          @get
+          op listPets(@path type: string): {
+            @body pets: Pet[];
+          };
+
+          @route("/{age}")
+          namespace ByAge {
+            @get
+            op listPets(@path type: string, @path age: int32): {
+              @body pets: Pet[];
+            };
+          }
+        }
+      }
+    `);
+    });
+
+    it("emits the hierarchy of namespace types", () => {
+      assert.match(
+        contents,
+        /export namespace PetStore \{(\n|.)*export namespace Pets \{(\n|.)*export namespace ByType \{(\n|.)*export namespace ByAge \{(\n|.)*\}(\n|.)*\}(\n|.)*\}(\n|.)*\}/
+      );
+    });
   });
 
   // it("emits to multiple files", async () => {

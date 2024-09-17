@@ -5,6 +5,7 @@ import {
   Enum,
   EnumMember,
   getDoc,
+  getNamespaceFullName,
   Interface,
   IntrinsicType,
   Model,
@@ -72,16 +73,6 @@ function emitNamespace(scope: Scope<string>) {
   return ns;
 }
 
-function getNamespaceChain(decl: { namespace?: Namespace }): string[] {
-  let ns = [decl.namespace?.name];
-  let parent = decl.namespace?.namespace;
-  while (parent) {
-    ns.push(parent.name);
-    parent = parent.namespace;
-  }
-  return ns.filter((n): n is string => !!n).reverse();
-}
-
 export class TypescriptEmitter<
   TEmitterOptions extends object = EmitterOptions,
 > extends CodeTypeEmitter<TEmitterOptions> {
@@ -93,7 +84,9 @@ export class TypescriptEmitter<
     const name = decl.namespace?.name;
     if (!name) return {};
 
-    const namespaceChain = getNamespaceChain(decl);
+    const namespaceChain = decl.namespace
+      ? getNamespaceFullName(decl.namespace).split(".")
+      : [];
 
     let nsScope = this.nsByName.get(name);
     if (!nsScope) {
