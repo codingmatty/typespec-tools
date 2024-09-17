@@ -243,4 +243,34 @@ describe("emitter-express", () => {
       expect(res.status).toBe(404);
     });
   });
+
+  describe("ByType", () => {
+    describe('GET "/pets/:type"', () => {
+      beforeAll(() => {
+        typedRouter.PetStorePets.ByType.listPets((req, res) => {
+          const filteredPets = pets.filter((pet) => {
+            return pet.kind === req.params.petType;
+          });
+          res.json({ pets: filteredPets });
+        });
+      });
+
+      it("should return 200", async () => {
+        const res = await fetch("http://localhost:3456/pets/type/dog");
+        expect(res.status).toBe(200);
+      });
+
+      it("should return the list of pets", async () => {
+        const res = await fetch("http://localhost:3456/pets/type/dog");
+        const data = await res.json();
+        expect(data).toMatchObject({ pets: [pets[0], pets[4]] });
+      });
+
+      it("should return an empty list", async () => {
+        const res = await fetch("http://localhost:3456/pets/type/zebra");
+        const data = await res.json();
+        expect(data).toMatchObject({ pets: [] });
+      });
+    });
+  });
 });

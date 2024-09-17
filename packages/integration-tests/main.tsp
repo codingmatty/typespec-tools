@@ -64,7 +64,7 @@ namespace Pets {
     @body error: NotFoundError;
   };
 
-  @route("/{petType}")
+  @route("/type/{petType}")
   namespace ByType {
     @get
     op listPets(@path petType: petType): {

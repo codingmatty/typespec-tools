@@ -55,28 +55,28 @@ export const intrinsicNameToTSType = new Map<string, string>([
   ["void", "void"],
 ]);
 
-function emitNamespaces(scope: Scope<string>) {
-  let res = "";
-  for (const childScope of scope.childScopes) {
-    res += emitNamespace(childScope);
-  }
-  return res;
-}
-function emitNamespace(scope: Scope<string>) {
-  let ns = `namespace ${scope.name} {\n`;
-  ns += emitNamespaces(scope);
-  for (const decl of scope.declarations) {
-    ns += decl.value + "\n";
-  }
-  ns += `}\n`;
-
-  return ns;
-}
-
 export class TypescriptEmitter<
   TEmitterOptions extends object = EmitterOptions,
 > extends CodeTypeEmitter<TEmitterOptions> {
   protected nsByName: Map<string, Scope<string>> = new Map();
+
+  emitNamespaces(scope: Scope<string>) {
+    let res = "";
+    for (const childScope of scope.childScopes) {
+      res += this.emitNamespace(childScope);
+    }
+    return res;
+  }
+  emitNamespace(scope: Scope<string>) {
+    let ns = `export namespace ${scope.name} {\n`;
+    ns += this.emitNamespaces(scope);
+    for (const decl of scope.declarations) {
+      ns += decl.value + "\n";
+    }
+    ns += `}\n`;
+
+    return ns;
+  }
 
   declarationContext(
     decl: TypeSpecDeclaration & { namespace?: Namespace }
@@ -409,7 +409,7 @@ export class TypescriptEmitter<
       emittedSourceFile.contents += decl.value + "\n";
     }
 
-    emittedSourceFile.contents += emitNamespaces(sourceFile.globalScope);
+    emittedSourceFile.contents += this.emitNamespaces(sourceFile.globalScope);
 
     emittedSourceFile.contents = await prettier.format(
       emittedSourceFile.contents,

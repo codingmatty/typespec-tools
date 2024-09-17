@@ -20,7 +20,6 @@ import {
   Declaration,
   EmittedSourceFile,
   EmitterOutput,
-  Scope,
   SourceFile,
   StringBuilder,
 } from "@typespec/compiler/emitter-framework";
@@ -34,24 +33,6 @@ type NamespaceDeclarations = {
   operationNames: string[];
   namespaceChain: string[];
 };
-
-function emitNamespaces(scope: Scope<string>) {
-  let res = "";
-  for (const childScope of scope.childScopes) {
-    res += emitNamespace(childScope);
-  }
-  return res;
-}
-function emitNamespace(scope: Scope<string>) {
-  let ns = `export namespace ${scope.name} {\n`;
-  ns += emitNamespaces(scope);
-  for (const decl of scope.declarations) {
-    ns += decl.value + "\n";
-  }
-  ns += `}\n`;
-
-  return ns;
-}
 
 export class ExpressEmitter extends TypescriptEmitter<EmitterOptions> {
   operationDeclaration(
@@ -220,7 +201,7 @@ export class ExpressEmitter extends TypescriptEmitter<EmitterOptions> {
       );
     }
 
-    emittedSourceFile.contents += emitNamespaces(sourceFile.globalScope);
+    emittedSourceFile.contents += this.emitNamespaces(sourceFile.globalScope);
 
     const namespaces = Array.from(declarationsByNamespace.values());
 

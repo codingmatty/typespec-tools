@@ -1,10 +1,12 @@
 import { describe, expectTypeOf, it } from "vitest";
-import {
-  petType,
-  Pet,
-  listPets,
-  getPet,
-} from "../tsp-output/@typespec-tools/emitter-typescript/output";
+import { PetStore } from "../tsp-output/@typespec-tools/emitter-typescript/output";
+
+const petType = PetStore.petType;
+type Pet = PetStore.Pet;
+type listPetsParams = PetStore.Pets.listPetsParams;
+type listPetsReturnType = PetStore.Pets.listPetsReturnType;
+type getPetParams = PetStore.Pets.getPetParams;
+type getPetReturnType = PetStore.Pets.getPetReturnType;
 
 describe("emitter-zod", () => {
   describe("PetSchema", () => {
@@ -28,21 +30,19 @@ describe("emitter-zod", () => {
 
   describe("listPetsSchema", () => {
     it("validates a valid function", () => {
-      const validFn = () => ({
+      const validFn = (type?: PetStore.petType) => ({
         pets: [{ id: 123, name: "Fluffy", age: 3, kind: petType.dog }],
       });
-      expectTypeOf(validFn).parameters.toEqualTypeOf<Parameters<listPets>>();
-      expectTypeOf(validFn).returns.toEqualTypeOf<ReturnType<listPets>>();
+      expectTypeOf(validFn).parameters.toEqualTypeOf<listPetsParams>();
+      expectTypeOf(validFn).returns.toEqualTypeOf<listPetsReturnType>();
     });
 
     it("validates an invalid function", () => {
       const invalidFn = (x: number) => ({
         pets: [{ id: "invalid", name: 123, kind: "invalid" }],
       });
-      expectTypeOf(invalidFn).parameters.not.toEqualTypeOf<
-        Parameters<listPets>
-      >();
-      expectTypeOf(invalidFn).returns.not.toEqualTypeOf<ReturnType<listPets>>();
+      expectTypeOf(invalidFn).parameters.not.toEqualTypeOf<listPetsParams>();
+      expectTypeOf(invalidFn).returns.not.toEqualTypeOf<listPetsReturnType>();
     });
   });
 
@@ -52,9 +52,9 @@ describe("emitter-zod", () => {
         const validFn = (x: number) => ({
           pet: { id: 123, name: "Fluffy", age: 3, kind: petType.dog },
         });
-        expectTypeOf(validFn).parameters.toEqualTypeOf<Parameters<getPet>>();
+        expectTypeOf(validFn).parameters.toEqualTypeOf<getPetParams>();
         expectTypeOf(validFn).returns.toEqualTypeOf<
-          Extract<ReturnType<getPet>, { pet: any }>
+          Extract<getPetReturnType, { pet: any }>
         >();
       });
 
@@ -62,10 +62,8 @@ describe("emitter-zod", () => {
         const invalidFn = () => ({
           pet: { id: "invalid", name: 123, kind: "invalid" },
         });
-        expectTypeOf(invalidFn).parameters.not.toEqualTypeOf<
-          Parameters<getPet>
-        >();
-        expectTypeOf(invalidFn).returns.not.toEqualTypeOf<ReturnType<getPet>>();
+        expectTypeOf(invalidFn).parameters.not.toEqualTypeOf<getPetParams>();
+        expectTypeOf(invalidFn).returns.not.toEqualTypeOf<getPetReturnType>();
       });
     });
 
@@ -74,9 +72,9 @@ describe("emitter-zod", () => {
         const validFn = (x: number) => ({
           error: { code: "NOT_FOUND" as const, message: "Testing" },
         });
-        expectTypeOf(validFn).parameters.toEqualTypeOf<Parameters<getPet>>();
+        expectTypeOf(validFn).parameters.toEqualTypeOf<getPetParams>();
         expectTypeOf(validFn).returns.toEqualTypeOf<
-          Extract<ReturnType<getPet>, { error: any }>
+          Extract<getPetReturnType, { error: any }>
         >();
       });
 
@@ -84,10 +82,8 @@ describe("emitter-zod", () => {
         const invalidFn = () => ({
           error: { code: "NOT_FOUND", message: 123 },
         });
-        expectTypeOf(invalidFn).parameters.not.toEqualTypeOf<
-          Parameters<getPet>
-        >();
-        expectTypeOf(invalidFn).returns.not.toEqualTypeOf<ReturnType<getPet>>();
+        expectTypeOf(invalidFn).parameters.not.toEqualTypeOf<getPetParams>();
+        expectTypeOf(invalidFn).returns.not.toEqualTypeOf<getPetReturnType>();
       });
     });
   });
