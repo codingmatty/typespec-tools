@@ -1,5 +1,11 @@
 # @typespec-tools/emitter-zod
 
+## 0.3.0
+
+### Minor Changes
+
+- 94e4d8c: Emit namespace blocks
+
 ## 0.2.2
 
 ### Patch Changes
