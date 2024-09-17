@@ -5,12 +5,12 @@
 ### Minor Changes
 
 - 2239271: fallback to use any when type is unknown
-- ec989ea: Update types to use proper namespacing
+- ec989ea: update types to use proper namespacing
 - 52a1fff: emit namespace blocks
 
 ### Patch Changes
 
-- dcfc88d: Fix namespace exporting
+- dcfc88d: fix namespace exporting
 
 ## 0.2.2
 

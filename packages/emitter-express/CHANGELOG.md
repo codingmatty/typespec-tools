@@ -5,11 +5,11 @@
 ### Minor Changes
 
 - 52a1fff: emit namespace blocks
-- a519e68: Add children routes to parent route handlers response
+- a519e68: add children routes to parent route handlers response
 
 ### Patch Changes
 
-- dcfc88d: Fix namespace exporting
+- dcfc88d: fix namespace exporting
 
 ## 0.2.2
 
