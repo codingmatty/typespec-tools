@@ -11,6 +11,7 @@ import { describe, it } from "vitest";
 
 import { SingleFileZodEmitter, ZodEmitter } from "../src/emitter.js";
 import { emitTypeSpec, getHostForTypeSpecFile } from "./host.js";
+import { EmitterOptions } from "../src/lib.js";
 
 const testCode = `
 model Basic { x: string }
@@ -63,8 +64,8 @@ class SingleFileTestEmitter extends SingleFileZodEmitter {
   }
 }
 
-async function emitTypeSpecToTs(code: string) {
-  const emitter = await emitTypeSpec(SingleFileTestEmitter, code);
+async function emitTypeSpecToTs(code: string, options?: EmitterOptions) {
+  const emitter = await emitTypeSpec(SingleFileTestEmitter, code, options);
 
   const sf = await emitter.getProgram().host.readFile("./tsp-output/output.ts");
   return sf.text;
@@ -432,6 +433,45 @@ describe("emitter-framework: zod emitter", () => {
     assert.match(contents, /export const FooSchema = z.object\(/);
     assert.match(contents, /x: z.string\(\)/);
     assert.match(contents, /y: z.number\(\)/);
+  });
+
+  it("emits declaration with custom prefix", async () => {
+    const contents = await emitTypeSpecToTs(
+      `
+      model Foo {
+        x: string;
+      }
+      `,
+      { "schema-prefix": "My", "schema-suffix": "" }
+    );
+
+    assert.match(contents, /export const MyFoo = z.object\(/);
+  });
+
+  it("emits declaration with custom suffix", async () => {
+    const contents = await emitTypeSpecToTs(
+      `
+      model Foo {
+        x: string;
+      }
+      `,
+      { "schema-suffix": "Testing" }
+    );
+
+    assert.match(contents, /export const FooTesting = z.object\(/);
+  });
+
+  it("emits declaration with custom prefix and suffix", async () => {
+    const contents = await emitTypeSpecToTs(
+      `
+      model Foo {
+        x: string;
+      }
+      `,
+      { "schema-prefix": "My_", "schema-suffix": "_Schema" }
+    );
+
+    assert.match(contents, /export const My_Foo_Schema = z.object\(/);
   });
 
   it("emits models to a single file", async () => {

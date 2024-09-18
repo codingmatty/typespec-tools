@@ -2,6 +2,8 @@ import { createTypeSpecLibrary, JSONSchemaType } from "@typespec/compiler";
 
 export interface EmitterOptions {
   "output-file"?: string;
+  "schema-prefix"?: string;
+  "schema-suffix"?: string;
 }
 
 const EmitterOptionsSchema: JSONSchemaType<EmitterOptions> = {
@@ -9,6 +11,8 @@ const EmitterOptionsSchema: JSONSchemaType<EmitterOptions> = {
   additionalProperties: false,
   properties: {
     "output-file": { type: "string", nullable: true },
+    "schema-prefix": { type: "string", nullable: true },
+    "schema-suffix": { type: "string", nullable: true, default: "Schema" },
   },
   required: [],
 };

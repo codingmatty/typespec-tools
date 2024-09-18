@@ -57,6 +57,18 @@ export const intrinsicNameToTSType = new Map<string, string>([
 export class ZodEmitter extends CodeTypeEmitter<EmitterOptions> {
   protected nsByName: Map<string, Scope<string>> = new Map();
 
+  getPrefix() {
+    const options = this.emitter.getOptions();
+    return options["schema-prefix"] ?? "";
+  }
+  getSuffix() {
+    const options = this.emitter.getOptions();
+    return options["schema-suffix"] ?? "Schema";
+  }
+  wrapIdentifier(name: string) {
+    return `${this.getPrefix()}${name}${this.getSuffix()}`;
+  }
+
   emitNamespaces(scope: Scope<string>) {
     let res = "";
     for (const childScope of scope.childScopes) {
@@ -197,7 +209,7 @@ export class ZodEmitter extends CodeTypeEmitter<EmitterOptions> {
 
     return this.emitter.result.declaration(
       name,
-      code`${commentCode}\nexport const ${name}Schema = z.object({
+      code`${commentCode}\nexport const ${this.wrapIdentifier(name)} = z.object({
         ${this.emitter.emitModelProperties(model)}
     })`
     );
@@ -238,7 +250,7 @@ export class ZodEmitter extends CodeTypeEmitter<EmitterOptions> {
   ): EmitterOutput<string> {
     return this.emitter.result.declaration(
       name,
-      code`export const ${name}Schema = z.array(${this.emitter.emitTypeReference(elementType)});`
+      code`export const ${this.wrapIdentifier(name)} = z.array(${this.emitter.emitTypeReference(elementType)});`
     );
   }
 
@@ -257,7 +269,7 @@ export class ZodEmitter extends CodeTypeEmitter<EmitterOptions> {
     const returnsOutput = code`.returns(${this.emitter.emitOperationReturnType(operation)})`;
     return this.emitter.result.declaration(
       name,
-      code`export const ${name}Schema = z.function()${argsOutput}${returnsOutput}`
+      code`export const ${this.wrapIdentifier(name)} = z.function()${argsOutput}${returnsOutput}`
     );
   }
 
@@ -289,7 +301,7 @@ export class ZodEmitter extends CodeTypeEmitter<EmitterOptions> {
     return this.emitter.result.declaration(
       name,
       code`
-      export const ${name}Schema = z.object({
+      export const ${this.wrapIdentifier(name)} = z.object({
         ${this.emitter.emitInterfaceOperations(iface)}
       })
     `
@@ -330,7 +342,7 @@ export class ZodEmitter extends CodeTypeEmitter<EmitterOptions> {
   unionDeclaration(union: Union, name: string): EmitterOutput<string> {
     return this.emitter.result.declaration(
       name,
-      code`export const ${name}Schema = ${this.emitter.emitUnionVariants(union)}`
+      code`export const ${this.wrapIdentifier(name)} = ${this.emitter.emitUnionVariants(union)}`
     );
   }
 
@@ -391,9 +403,9 @@ export class ZodEmitter extends CodeTypeEmitter<EmitterOptions> {
     const basePath = pathDown.map((s) => s.name).join(".");
     return basePath
       ? this.emitter.result.rawCode(
-          `${basePath}.${targetDeclaration.name}Schema`
+          `${basePath}.${this.wrapIdentifier(targetDeclaration.name)}`
         )
-      : this.emitter.result.rawCode(`${targetDeclaration.name}Schema`);
+      : this.emitter.result.rawCode(this.wrapIdentifier(targetDeclaration.name));
   }
 
   async sourceFile(sourceFile: SourceFile<string>): Promise<EmittedSourceFile> {

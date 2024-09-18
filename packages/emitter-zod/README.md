@@ -51,6 +51,8 @@ options:
 
 ### Emitter options
 
-| Option        | Type   | Default     | Description             |
-| ------------- | ------ | ----------- | ----------------------- |
-| `output-file` | string | "output.ts" | Name of the output file |
+| Option          | Type   | Default     | Description                                                                                |
+| --------------- | ------ | ----------- | ------------------------------------------------------------------------------------------ |
+| `output-file`   | string | "output.ts" | Name of the output file                                                                    |
+| `schema-prefix` | string | ""          | Prefix for schema declarations, i.e. a setting of "s\_" would result in "s_Example"        |
+| `schema-suffix` | string | "Schema"    | Suffix for schema declarations, i.e. a setting of "Schema" would result in "ExampleSchema" |
