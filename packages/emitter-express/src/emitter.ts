@@ -12,6 +12,7 @@ import {
   isBodyRoot,
   isPathParam,
   isQueryParam,
+  listHttpOperationsIn,
 } from "@typespec/http";
 import {
   code,
@@ -129,7 +130,9 @@ export class ExpressEmitter extends TypescriptEmitter<EmitterOptions> {
       new Map();
 
     for (const httpService of httpServices) {
-      for (const operation of httpService.operations) {
+      const [operations] = listHttpOperationsIn(program, httpService.namespace);
+
+      for (const operation of operations) {
         const namespace =
           operation.operation.namespace?.name ?? httpService.namespace.name;
         const namespaceChain = operation.operation.namespace
