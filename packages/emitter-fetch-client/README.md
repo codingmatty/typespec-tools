@@ -1,6 +1,6 @@
-# @typespec-tools/emitter-express
+# @typespec-tools/emitter-fetch-client
 
-TypeSpec library for emitting a helper function to build type-safe Express routes from a [TypeSpec](https://typespec.io) DSL using the [@typespec/http](https://typespec.io/docs/libraries/http/reference) library.
+TypeSpec library for emitting a type-safe Fetch client based on routes from a [TypeSpec](https://typespec.io) DSL using the [@typespec/http](https://typespec.io/docs/libraries/http/reference) library.
 
 ---
 
@@ -11,7 +11,7 @@ TypeSpec library for emitting a helper function to build type-safe Express route
 
 ## Features / Roadmap
 
-- [x] Emit a function that can build type-safe Express routes
+- [x] Emit a function that can build a type-safe Fetch client
 - [ ] Add support for typed responses based on status codes
 - [ ] Add support for authorization
 - [ ] Add support for header types
@@ -21,7 +21,7 @@ TypeSpec library for emitting a helper function to build type-safe Express route
 ## Install
 
 ```bash
-npm install @typespec-tools/emitter-express
+npm install @typespec-tools/emitter-fetch-client
 ```
 
 ## Emitter
@@ -31,23 +31,23 @@ npm install @typespec-tools/emitter-express
 1. Via the command line
 
 ```bash
-tsp compile . --emit=@typespec-tools/emitter-express
+tsp compile . --emit=@typespec-tools/emitter-fetch-client
 ```
 
 2. Via the config
 
 ```yaml
 emit:
-  - "@typespec-tools/emitter-express"
+  - "@typespec-tools/emitter-fetch-client"
 ```
 
 The config can be extended with [options](#emitter-options) as follows:
 
 ```yaml
 emit:
-  - "@typespec-tools/emitter-express"
+  - "@typespec-tools/emitter-fetch-client"
 options:
-  "@typespec-tools/emitter-express":
+  "@typespec-tools/emitter-fetch-client":
     option: value
 ```
 
@@ -73,35 +73,24 @@ namespace Pets {
 This emitter will allow you to implement the following:
 
 ```typescript
-import { createTypedRouter } from "tsp-output/@typespec-tools/emitter-express/output";
+import { createTypedClient } from "tsp-output/@typespec-tools/emitter-fetch-client/output";
 
-const app = express();
-const router = express.Router();
+const client = createTypedClient("https://www.example.com/api");
 
-typedRouter = createTypedRouter(router);
-
-typedRouter.Pets.listPets((req, res) => {
-  // req.query.type is typed as petType enum
-  // the response has type: { pets: Pet[] }
-  res.json({ pets: [...] });
+const response: { pets: Pet[] } = client.Pets.listPets({
+  query: { type: petType.dog },
 });
-
-app.use(typedRouter.router);
 ```
 
 Alternatively, you can implement a single namespace:
 
 ```typescript
-import { createPetsRouter } from "tsp-output/@typespec-tools/emitter-express/output";
+import { createPetsClient } from "tsp-output/@typespec-tools/emitter-fetch-client/output";
 
-export const router = express.Router();
+const client = createPetsClient("https://www.example.com/api");
 
-typedPetsRouter = createPetsRouter(router);
-
-typedPetsRouter.listPets((req, res) => {
-  // req.query.type is typed as petType enum
-  // the response has type: { pets: Pet[] }
-  res.json({ pets: [...] });
+const response: { pets: Pet[] } = client.listPets({
+  query: { type: petType.dog },
 });
 ```
 

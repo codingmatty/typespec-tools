@@ -1,4 +1,4 @@
-# Typespec-Tools
+# TypeSpec-Tools
 
 ---
 
@@ -8,9 +8,10 @@ The motivation behind creating this project was to provide developers with a set
 
 ## Packages
 
-- [emitter-typescript](./packages/emitter-typescript/README.md): A Typespec emitter for Typescript types.
-- [emitter-express](./packages/emitter-express/README.md): A Typespec emitter for building type-safe Express routes.
-- [emitter-zod](./packages/emitter-zod/README.md): A Typespec emitter for Zod schemas.
+- [emitter-typescript](./packages/emitter-typescript/README.md): A TypeSpec emitter for Typescript types.
+- [emitter-express](./packages/emitter-express/README.md): A TypeSpec emitter for building type-safe Express routes.
+- [emitter-fetch-client](./packages/emitter-fetch-client/README.md): A TypeSpec emitter for building a type-safe Fetch Client.
+- [emitter-zod](./packages/emitter-zod/README.md): A TypeSpec emitter for Zod schemas.
 
 Please refer to the individual package README files for more information on each tool.
 

@@ -1,0 +1,48 @@
+{
+  "name": "@typespec-tools/emitter-fetch-client",
+  "version": "0.3.0",
+  "repository": "codingmatty/typespec-tools",
+  "author": {
+    "name": "Matthew Jacobs",
+    "email": "codingmatty@gmail.com",
+    "url": "https://www.codingmatty.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "typespec",
+    "emitter",
+    "fetch"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.js",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "peerDependencies": {
+    "@typespec/compiler": "^0.59.1",
+    "@typespec/http": "^0.59.1"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "@typespec-tools/eslint-config": "*",
+    "@typespec-tools/typescript-config": "*",
+    "@typespec-tools/emitter-typescript": "*",
+    "babel-jest": "^29.7.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-turbo": "^2.0.0",
+    "eslint-plugin-only-warn": "^1.1.0",
+    "typescript": "^5.3.3",
+    "vitest": "^2.0.5"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "lint": "eslint . --max-warnings 0"
+  }
+}

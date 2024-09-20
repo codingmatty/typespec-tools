@@ -1,6 +1,6 @@
 # @typespec-tools/emitter-typescript
 
-TypeSpec library for emitting Typescript types from the [TypeSpec](https://typespec.io) DSL.
+TypeSpec library for emitting Typescript types from a [TypeSpec](https://typespec.io) DSL.
 
 ---
 
