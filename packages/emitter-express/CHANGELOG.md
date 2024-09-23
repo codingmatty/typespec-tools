@@ -1,5 +1,15 @@
 # @typespec-tools/emitter-express
 
+## 0.4.0
+
+### Minor Changes
+
+- c043cde: remove statusCode from response body
+
+### Patch Changes
+
+- 5e0293d: tweak how opeations are evaluated
+
 ## 0.3.0
 
 ### Minor Changes

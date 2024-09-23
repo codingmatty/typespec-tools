@@ -1,6 +1,6 @@
 {
   "name": "@typespec-tools/emitter-express",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "repository": "codingmatty/typespec-tools",
   "author": {
     "name": "Matthew Jacobs",
