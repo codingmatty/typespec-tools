@@ -131,7 +131,7 @@ describe("emitter-fetch-client", () => {
       );
       assert.match(
         contents,
-        /export type listPetsResponseBody = { pets: Pet\[\] };/
+        /export type listPetsResponseBody = {\n\s+data: { pets: PetFromOperation\[\] };\n\s+statusCode: 200;\n\s+};/
       );
     });
 
@@ -145,7 +145,7 @@ describe("emitter-fetch-client", () => {
     it("emits the route callback type", () => {
       assert.match(
         contents,
-        /export interface Client \{(\n|.)*listPets: \((\n|.)*args: listPetsClientArgs,(\n|.)*options\?: RequestInit,(\n|.)*\) => Promise<listPetsResponseBody>;(\n|.)*\}/
+        /export interface Client \{(\n|.)*listPets: \((\n|.)*args\?: listPetsClientArgs,(\n|.)*options\?: RequestInit,(\n|.)*\) => Promise<listPetsResponseBody>;(\n|.)*\}/
       );
     });
 
@@ -163,7 +163,7 @@ describe("emitter-fetch-client", () => {
       assert.match(contents, /export type getPetParams = \{ petId: string \};/);
       assert.match(
         contents,
-        /export type getPetResponseBody = \{ pet: Pet \} \| \{ error: NotFoundError \};/
+        /export type getPetResponseBody =\n\s+\| { data: { pet: PetFromOperation }; statusCode: 200 }\n\s+\| { data: { error: NotFoundErrorFromOperation }; statusCode: 200 };/
       );
     });
 
@@ -192,7 +192,7 @@ describe("emitter-fetch-client", () => {
       assert.match(contents, /export type createPetBody = Pet;/);
       assert.match(
         contents,
-        /export type createPetResponseBody = \{ pet: Pet \};/
+        /export type createPetResponseBody = {\n\s+data: { pet: PetFromOperation };\n\s+statusCode: 200;\n\s+};/
       );
     });
 
@@ -231,7 +231,7 @@ describe("emitter-fetch-client", () => {
       );
       assert.match(
         contents,
-        /export type updatePetResponseBody = \{ pet: Pet \} \| \{ error: NotFoundError \};/
+        /export type updatePetResponseBody =\n\s+\| { data: { pet: PetFromOperation }; statusCode: 200 }\n\s+\| { data: { error: NotFoundErrorFromOperation }; statusCode: 200 };/
       );
     });
 
@@ -266,14 +266,14 @@ describe("emitter-fetch-client", () => {
       );
       assert.match(
         contents,
-        /export namespace Animals \{(\n|.)*export type listPetsResponseBody = { pets: Pet\[\] };(\n|.)*\}/
+        /export namespace Animals \{(\n|.)*export type listPetsResponseBody = {\n\s+data: { pets: PetFromOperation\[\] };\n\s+statusCode: 200;\n\s+};(\n|.)*\}/
       );
     });
 
     it("emits the handler type", () => {
       assert.match(
         contents,
-        /export namespace Animals \{(\n|.)*listPets: ((\n|.)*args: listPetsClientArgs,(\n|.)*options\?: RequestInit,(\n|.)*) => Promise<listPetsResponseBody>;(\n|.)*\}/
+        /export namespace Animals \{(\n|.)*listPets: ((\n|.)*args\?: listPetsClientArgs,(\n|.)*options\?: RequestInit,(\n|.)*) => Promise<listPetsResponseBody>;(\n|.)*\}/
       );
     });
 
@@ -287,7 +287,7 @@ describe("emitter-fetch-client", () => {
     it("emits the route callback type", () => {
       assert.match(
         contents,
-        /export namespace Animals \{(\n|.)*export interface Client \{(\n|.)*listPets: \((\n|.)*args: listPetsClientArgs,(\n|.)*options\?: RequestInit,(\n|.)*\) => Promise<listPetsResponseBody>;(\n|.)*\}/
+        /export namespace Animals \{(\n|.)*export interface Client \{(\n|.)*listPets: \((\n|.)*args\?: listPetsClientArgs,(\n|.)*options\?: RequestInit,(\n|.)*\) => Promise<listPetsResponseBody>;(\n|.)*\}/
       );
     });
 
