@@ -2,6 +2,7 @@ import * as prettier from "prettier";
 import {
   EmitContext,
   getNamespaceFullName,
+  Model,
   ModelProperty,
   Operation,
 } from "@typespec/compiler";
@@ -12,6 +13,7 @@ import {
   isBodyRoot,
   isPathParam,
   isQueryParam,
+  isStatusCode,
   listHttpOperationsIn,
 } from "@typespec/http";
 import {
@@ -105,6 +107,23 @@ export class ExpressEmitter extends TypescriptEmitter<EmitterOptions> {
     );
 
     return this.emitter.result.declaration(name, cb.reduce());
+  }
+
+  modelProperties(model: Model): EmitterOutput<string> {
+    const program = this.emitter.getProgram();
+    const builder = new StringBuilder();
+
+    for (const prop of model.properties.values()) {
+      if (isStatusCode(program, prop)) {
+        // Remove status code from model properties
+        // This will be added to the response object
+        continue;
+      }
+      const propVal = this.emitter.emitModelProperty(prop);
+      builder.push(code`${propVal};`);
+    }
+
+    return this.emitter.result.rawCode(builder.reduce());
   }
 
   async sourceFile(sourceFile: SourceFile<string>): Promise<EmittedSourceFile> {
