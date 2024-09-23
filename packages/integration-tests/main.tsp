@@ -31,45 +31,45 @@ enum petType {
   reptile: "reptile",
 }
 
+model SinglePetResponse {
+  ...OkResponse;
+  @body pet: Pet;
+}
+
+model MultiplePetResponse {
+  ...OkResponse;
+  @body pets: Pet[];
+}
+
+model CommonNotFoundResponse {
+  ...NotFoundResponse;
+  @body error: NotFoundError;
+}
+
 @route("/pets")
 namespace Pets {
   @get
-  op listPets(@query type?: petType): {
-    @body pets: Pet[];
-  };
+  op listPets(@query type?: petType): MultiplePetResponse;
 
   @get
-  op getPet(@path petId: int32): {
-    @body pet: Pet;
-  } | {
-    @body error: NotFoundError;
-  };
+  op getPet(@path petId: int32): SinglePetResponse | CommonNotFoundResponse;
 
   @post
-  op createPet(@body pet: Pet): {
-    @body pet: Pet;
-  };
+  op createPet(@body pet: Pet): SinglePetResponse;
 
   @put
-  op updatePet(@path petId: int32, @body pet: Pet): {
-    @body pet: Pet;
-  } | {
-    @body error: NotFoundError;
-  };
+  op updatePet(
+    @path petId: int32,
+    @body pet: OptionalProperties<Pet>,
+  ): SinglePetResponse | CommonNotFoundResponse;
 
   @delete
-  op deletePet(@path petId: int32): {
-    @body pet: Pet;
-  } | {
-    @body error: NotFoundError;
-  };
+  op deletePet(@path petId: int32): SinglePetResponse | CommonNotFoundResponse;
 
   @route("/type/{petType}")
   namespace ByType {
     @get
-    op listPets(@path petType: petType): {
-      @body pets: Pet[];
-    };
+    op listPets(@path petType: petType): MultiplePetResponse;
   }
 }
 

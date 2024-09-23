@@ -10,6 +10,7 @@
   },
   "devDependencies": {
     "@typespec-tools/emitter-express": "*",
+    "@typespec-tools/emitter-fetch-client": "*",
     "@typespec-tools/emitter-typescript": "*",
     "@typespec-tools/emitter-zod": "*",
     "@typespec/compiler": "0.60.0",

@@ -2,8 +2,10 @@ import * as prettier from "prettier";
 import {
   EmitContext,
   getNamespaceFullName,
+  Model,
   ModelProperty,
   Operation,
+  Type,
 } from "@typespec/compiler";
 import {
   getAllHttpServices,
@@ -12,6 +14,7 @@ import {
   isBodyRoot,
   isPathParam,
   isQueryParam,
+  isStatusCode,
   listHttpOperationsIn,
 } from "@typespec/http";
 import {
@@ -54,6 +57,12 @@ export class FetchClientEmitter extends TypescriptEmitter<EmitterOptions> {
     const program = this.emitter.getProgram();
     return Array.from(operation.parameters.properties.values()).some((prop) =>
       isQueryParam(program, prop)
+    );
+  }
+
+  operationHasAnyRequiredParams(operation: Operation): boolean {
+    return Array.from(operation.parameters.properties.values()).some(
+      (prop) => !prop.optional
     );
   }
 
@@ -120,7 +129,7 @@ export class FetchClientEmitter extends TypescriptEmitter<EmitterOptions> {
     }
 
     cb.push(
-      code`export type ${name}ResponseBody = ${this.emitter.emitTypeReference(operation.returnType)};`
+      code`export type ${name}ResponseBody = ${this.emitter.emitOperationReturnType(operation)};`
     );
 
     const argsTypeParts = [
@@ -135,6 +144,67 @@ export class FetchClientEmitter extends TypescriptEmitter<EmitterOptions> {
     );
 
     return this.emitter.result.declaration(name, cb.reduce());
+  }
+
+  operationReturnType(
+    operation: Operation,
+    returnType: Type
+  ): EmitterOutput<string> {
+    const program = this.emitter.getProgram();
+    if (returnType.kind === "Model") {
+      const builder = new StringBuilder();
+
+      builder.push(code`{data: ${this.emitter.emitTypeReference(returnType)};`);
+      const statusCodeProp = Array.from(returnType.properties.values()).find(
+        (prop) => isStatusCode(program, prop)
+      );
+      if (statusCodeProp) {
+        const propVal = this.emitter.emitModelProperty(statusCodeProp);
+        builder.push(code`${propVal};`);
+      } else {
+        // If no status code property is found, assume 200
+        builder.push(code`statusCode: 200;`);
+      }
+      builder.push(code`}`);
+      return this.emitter.result.rawCode(builder.reduce());
+    } else if (returnType.kind === "Union") {
+      const builder = new StringBuilder();
+      for (const { type } of returnType.variants.values()) {
+        if (type.kind === "Model") {
+          builder.push(code`| {data: ${this.emitter.emitTypeReference(type)};`);
+          const statusCodeProp = Array.from(type.properties.values()).find(
+            (prop) => isStatusCode(program, prop)
+          );
+          if (statusCodeProp) {
+            const propVal = this.emitter.emitModelProperty(statusCodeProp);
+            builder.push(code`${propVal};`);
+          } else {
+            // If no status code property is found, assume 200
+            builder.push(code`statusCode: 200;`);
+          }
+          builder.push(code`}`);
+        }
+      }
+      return this.emitter.result.rawCode(builder.reduce());
+    }
+    return this.emitter.emitTypeReference(returnType);
+  }
+
+  modelProperties(model: Model): EmitterOutput<string> {
+    const program = this.emitter.getProgram();
+    const builder = new StringBuilder();
+
+    for (const prop of model.properties.values()) {
+      if (isStatusCode(program, prop)) {
+        // Remove status code from model properties
+        // This will be added to the response object
+        continue;
+      }
+      const propVal = this.emitter.emitModelProperty(prop);
+      builder.push(code`${propVal};`);
+    }
+    
+    return this.emitter.result.rawCode(builder.reduce());
   }
 
   async sourceFile(sourceFile: SourceFile<string>): Promise<EmittedSourceFile> {
@@ -168,13 +238,23 @@ export class FetchClientEmitter extends TypescriptEmitter<EmitterOptions> {
       new Map();
 
     for (const httpService of httpServices) {
-      const [operations] = listHttpOperationsIn(program, httpService.namespace);
+      const [httpOperations] = listHttpOperationsIn(
+        program,
+        httpService.namespace
+      );
 
-      for (const operation of operations) {
+      for (const httpOperation of httpOperations) {
+        const { operation, path, verb } = httpOperation;
+
+        const operationArgsRequired =
+          this.operationHasAnyRequiredParams(operation);
+        const operationName = operation.name;
+        const handlerType = `${operationName}Client`;
+
         const namespace =
-          operation.operation.namespace?.name ?? httpService.namespace.name;
-        const namespaceChain = operation.operation.namespace
-          ? getNamespaceFullName(operation.operation.namespace).split(".")
+          operation.namespace?.name ?? httpService.namespace.name;
+        const namespaceChain = operation.namespace
+          ? getNamespaceFullName(operation.namespace).split(".")
           : [];
         const declarations = declarationsByNamespace.get(namespace) ?? {
           typedClientCallbackTypes: [],
@@ -183,20 +263,22 @@ export class FetchClientEmitter extends TypescriptEmitter<EmitterOptions> {
           namespaceChain,
         };
 
-        const handlerType = `${operation.operation.name}Client`;
-        const operationName = operation.operation.name;
         declarations.operationNames.push(operationName);
         declarations.typedClientCallbackTypes.push(
-          `${operationName}: (args: ${handlerType}Args, options?: RequestInit) => Promise<${operationName}ResponseBody>;`
+          `${operationName}: (args${operationArgsRequired ? "" : "?"}: ${handlerType}Args, options?: RequestInit) => Promise<${operationName}ResponseBody>;`
         );
         declarations.routeHandlerFunctions.push(
           `const ${operationName}: ${namespaceChain.join(".")}.Client["${operationName}"] = async (args, options) => { 
-            const queryString = ${this.operationHasQuery(operation.operation) ? `queryParamsToString(args.query)` : '""'};
-            const path = \`\${baseUrl}${operation.path.replace(/\{(\w+)\}/, "${args.$1}")}\${queryString}\`;
+            ${
+              operationArgsRequired
+                ? `const queryString = ${this.operationHasQuery(operation) ? `queryParamsToString(args.query)` : '""'};`
+                : `const queryString = ${this.operationHasQuery(operation) ? `args ? queryParamsToString(args?.query) : ''` : '""'};`
+            }
+            const path = \`\${baseUrl}${path.replace(/\{(\w+)\}/, "${args.$1}")}\${queryString}\`;
             const opts: RequestInit = {
-              method: '${operation.verb.toUpperCase()}',
+              method: '${verb.toUpperCase()}',
               ${
-                this.operationHasBody(operation.operation)
+                this.operationHasBody(operation)
                   ? `body: JSON.stringify(args.body),`
                   : ""
               }
@@ -208,10 +290,10 @@ export class FetchClientEmitter extends TypescriptEmitter<EmitterOptions> {
             };
             
             const res = await fetch(path, opts);
-            if (!res.ok) {
-              throw new Error(\`Request failed with status \${res.status}\`);
-            }
-            return res.json();
+            
+            const data = await res.json();
+            const statusCode = res.status;
+            return {data, statusCode} as ${namespaceChain.join(".")}.${operationName}ResponseBody;
           };`
         );
 

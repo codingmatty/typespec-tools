@@ -1,5 +1,6 @@
 emit:
   - "@typespec/openapi3"
   - "@typespec-tools/emitter-express"
+  - "@typespec-tools/emitter-fetch-client"
   - "@typespec-tools/emitter-typescript"
   - "@typespec-tools/emitter-zod"
