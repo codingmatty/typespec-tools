@@ -1,4 +1,6 @@
 import * as prettier from "prettier";
+import prettierPluginTypescript from "prettier/plugins/typescript";
+import prettierPluginEstree from "prettier/plugins/estree";
 import {
   BooleanLiteral,
   EmitContext,
@@ -415,6 +417,7 @@ export class TypescriptEmitter<
       emittedSourceFile.contents,
       {
         parser: "typescript",
+        plugins: [prettierPluginTypescript, prettierPluginEstree],
       }
     );
     return emittedSourceFile;
