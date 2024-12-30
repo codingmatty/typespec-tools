@@ -1,5 +1,11 @@
 # @typespec-tools/emitter-typescript
 
+## 0.4.0
+
+### Patch Changes
+
+- 80b5b2b: Allow running emitter in browser mode
+
 ## 0.3.0
 
 ### Minor Changes
