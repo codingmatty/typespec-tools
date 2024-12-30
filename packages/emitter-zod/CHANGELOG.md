@@ -1,5 +1,11 @@
 # @typespec-tools/emitter-zod
 
+## 0.4.0
+
+### Minor Changes
+
+- 5390da6: add options to transform schema declaration names
+
 ## 0.3.0
 
 ### Minor Changes
