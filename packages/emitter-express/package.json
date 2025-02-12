@@ -39,7 +39,7 @@
     "eslint-config-turbo": "^2.0.0",
     "eslint-plugin-only-warn": "^1.1.0",
     "typescript": "^5.3.3",
-    "vitest": "^2.0.5"
+    "vitest": "^2.1.9"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
